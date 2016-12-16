@@ -69,8 +69,8 @@ if (tensorflow_ENABLE_GPU)
     "${tensorflow_source_dir}/tensorflow/core/grappler/devices.cc"
   )
   file(GLOB_RECURSE tf_core_gpu_exclude_srcs
-     "${tensorflow_source_dir}/tensorflow/core/*test*.cc"
-     "${tensorflow_source_dir}/tensorflow/core/*test*.cc"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/*test*.cc"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/*test*.cc"
   )
   list(REMOVE_ITEM tf_core_gpu_srcs ${tf_core_gpu_exclude_srcs})
   list(APPEND tf_core_cpu_srcs ${tf_core_gpu_srcs})
@@ -78,3 +78,5 @@ endif()
 
 add_library(tf_core_cpu OBJECT ${tf_core_cpu_srcs})
 add_dependencies(tf_core_cpu tf_core_framework)
+
+InstallTFHeaders(tf_core_cpu_srcs ${tensorflow_SOURCE_DIR} include)

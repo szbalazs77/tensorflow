@@ -42,7 +42,7 @@ ExternalProject_Add(nsync
     GIT_TAG ${nsync_TAG}
     DOWNLOAD_DIR "${DOWNLOAD_LOCATION}"
     BUILD_IN_SOURCE 1
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/patches/nsync/CMakeLists.txt ${nsync_BUILD}
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/contrib/cmake/patches/nsync/CMakeLists.txt ${nsync_BUILD}
     INSTALL_DIR ${nsync_INSTALL}
     CMAKE_CACHE_ARGS
         -DCMAKE_BUILD_TYPE:STRING=Release

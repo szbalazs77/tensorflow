@@ -46,7 +46,7 @@ if (WIN32)
         PREFIX jpeg
         URL ${jpeg_URL}
         URL_HASH ${jpeg_HASH}
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/patches/jpeg/CMakeLists.txt ${jpeg_BUILD}
+        PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/contrib/cmake/patches/jpeg/CMakeLists.txt ${jpeg_BUILD}
         INSTALL_DIR ${jpeg_INSTALL}
         DOWNLOAD_DIR "${DOWNLOAD_LOCATION}"
         CMAKE_CACHE_ARGS

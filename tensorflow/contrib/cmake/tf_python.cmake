@@ -133,7 +133,7 @@ file(GLOB_RECURSE tf_protos_python_srcs RELATIVE ${tensorflow_source_dir}
     "${tensorflow_source_dir}/tensorflow/contrib/training/*.proto"
 )
 RELATIVE_PROTOBUF_GENERATE_PYTHON(
-    ${tensorflow_source_dir} PYTHON_PROTO_GENFILES ${tf_protos_python_srcs}
+    ${tensorflow_SOURCE_DIR} PYTHON_PROTO_GENFILES ${tf_protos_python_srcs}
 )
 
 # NOTE(mrry): Avoid regenerating the tensorflow/core protos because this
@@ -147,7 +147,7 @@ file(GLOB_RECURSE tf_python_protos_cc_srcs RELATIVE ${tensorflow_source_dir}
     "${tensorflow_source_dir}/tensorflow/contrib/training/*.proto"
 )
 RELATIVE_PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS
-    ${tensorflow_source_dir} ${tf_python_protos_cc_srcs}
+    ${tensorflow_SOURCE_DIR} ${tf_python_protos_cc_srcs}
 )
 
 add_library(tf_python_protos_cc ${PROTO_SRCS} ${PROTO_HDRS})
@@ -172,8 +172,8 @@ function(add_python_module MODULE_NAME)
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/tf_python/${MODULE_NAME}")
     add_custom_command(TARGET tf_python_touchup_modules PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/tf_python/${MODULE_NAME}/__init__.py")
-    file(GLOB module_python_srcs RELATIVE ${tensorflow_source_dir}
-        "${tensorflow_source_dir}/${MODULE_NAME}/*.py"
+    file(GLOB module_python_srcs RELATIVE ${tensorflow_SOURCE_DIR}
+        "${tensorflow_SOURCE_DIR}/${MODULE_NAME}/*.py"
     )
     if(NOT ${ADD_PYTHON_MODULE_DONTCOPY})
         foreach(script ${module_python_srcs})
@@ -708,7 +708,7 @@ function(GENERATE_PYTHON_OP_LIB tf_python_op_lib_name)
     # containing the wrappers.
     add_custom_command(
       OUTPUT ${GENERATE_PYTHON_OP_LIB_DESTINATION}
-      COMMAND ${tf_python_op_lib_name}_gen_python @${tensorflow_source_dir}/tensorflow/python/ops/hidden_ops.txt ${require_shape_fn} > ${GENERATE_PYTHON_OP_LIB_DESTINATION}
+      COMMAND ${tf_python_op_lib_name}_gen_python @${tensorflow_SOURCE_DIR}/tensorflow/python/ops/hidden_ops.txt ${require_shape_fn} > ${GENERATE_PYTHON_OP_LIB_DESTINATION}
       DEPENDS ${tf_python_op_lib_name}_gen_python
     )
 
@@ -829,13 +829,13 @@ add_custom_command(
       DEPENDS tf_python_touchup_modules __force_rebuild
       COMMAND ${SWIG_EXECUTABLE}
       ARGS -python -c++
-           -I${tensorflow_source_dir}
+           -I${tensorflow_SOURCE_DIR}
            -I${CMAKE_CURRENT_BINARY_DIR}
            -module pywrap_tensorflow_internal
            -outdir ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/python
            -o ${CMAKE_CURRENT_BINARY_DIR}/pywrap_tensorflow_internal.cc
            -globals ''
-           ${tensorflow_source_dir}/tensorflow/python/tensorflow.i
+           ${tensorflow_SOURCE_DIR}/tensorflow/python/tensorflow.i
       COMMENT "Running SWIG to generate Python wrappers"
       VERBATIM )
 
@@ -1063,7 +1063,7 @@ add_dependencies(tf_python_build_pip_package
 
 # Fix-up Python files that were not included by the add_python_module() macros.
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/tensorflow/tools/pip_package/setup.py
+  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/tensorflow/tools/pip_package/setup.py
                                    ${CMAKE_CURRENT_BINARY_DIR}/tf_python/)
 # This file is unfortunately excluded by the regex that excludes *_test.py
 # files, but it is imported into tf.contrib, so we add it explicitly.
@@ -1083,10 +1083,10 @@ else()
                                      ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/python/_pywrap_tensorflow_internal.so)
 endif()
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/tensorflow/tools/pip_package/README
+  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/tensorflow/tools/pip_package/README
                                    ${CMAKE_CURRENT_BINARY_DIR}/tf_python/)
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/tensorflow/tools/pip_package/MANIFEST.in
+  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/tensorflow/tools/pip_package/MANIFEST.in
                                    ${CMAKE_CURRENT_BINARY_DIR}/tf_python/)
 
 # Copy datasets for tf.contrib.learn.

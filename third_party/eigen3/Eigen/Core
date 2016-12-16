@@ -1,1 +1,1 @@
-#include "Eigen/Core"
+#include_next "Eigen/Core"

@@ -33,7 +33,7 @@ if(WIN32)
       URL_HASH ${farmhash_HASH}
       DOWNLOAD_DIR "${DOWNLOAD_LOCATION}"
       BUILD_IN_SOURCE 1
-      PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/patches/farmhash/CMakeLists.txt ${farmhash_BUILD}
+      PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/contrib/cmake/patches/farmhash/CMakeLists.txt ${farmhash_BUILD}
       INSTALL_DIR ${farmhash_INSTALL}
       CMAKE_CACHE_ARGS
           -DCMAKE_BUILD_TYPE:STRING=Release

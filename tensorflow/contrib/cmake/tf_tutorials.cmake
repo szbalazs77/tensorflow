@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 set(tf_tutorials_example_trainer_srcs
-    "${tensorflow_source_dir}/tensorflow/cc/tutorials/example_trainer.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/cc/tutorials/example_trainer.cc"
 )
 
 add_executable(tf_tutorials_example_trainer

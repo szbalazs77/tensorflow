@@ -147,3 +147,8 @@ target_link_libraries(${benchmark_model} PUBLIC
   ${tf_core_gpu_kernels_lib}
   ${tensorflow_EXTERNAL_LIBRARIES}
 )
+if (tensorflow_ENABLE_GRPC_SUPPORT)
+    add_dependencies(${proto_text} grpc)
+endif()
+
+install(TARGETS ${proto_text} RUNTIME DESTINATION bin/tensorflow)

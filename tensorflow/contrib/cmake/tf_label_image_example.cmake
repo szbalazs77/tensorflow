@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 set(tf_label_image_example_srcs
-    "${tensorflow_source_dir}/tensorflow/examples/label_image/main.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/examples/label_image/main.cc"
 )
 
 add_executable(tf_label_image_example

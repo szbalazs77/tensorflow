@@ -1,4 +1,4 @@
-#include "unsupported/Eigen/CXX11/Tensor"
+#include_next "unsupported/Eigen/CXX11/Tensor"
 
 #ifdef _WIN32
 #ifndef SLEEP_FUNC_HEADER_GUARD

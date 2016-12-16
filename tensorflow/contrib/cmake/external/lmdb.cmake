@@ -25,7 +25,7 @@ ExternalProject_Add(lmdb
     URL ${lmdb_URL}
     URL_HASH ${lmdb_HASH}
     PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/patches/lmdb/CMakeLists.txt ${lmdb_BUILD}
+        ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/contrib/cmake/patches/lmdb/CMakeLists.txt ${lmdb_BUILD}
     INSTALL_DIR ${lmdb_INSTALL}
     DOWNLOAD_DIR "${DOWNLOAD_LOCATION}"
     CMAKE_CACHE_ARGS

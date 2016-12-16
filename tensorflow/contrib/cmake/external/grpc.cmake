@@ -41,7 +41,7 @@ ExternalProject_Add(grpc
     BUILD_IN_SOURCE 1
     # TODO(jhseu): Remove this PATCH_COMMAND once grpc removes the dependency
     # on "grpc" from the "grpc++_unsecure" rule.
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/patches/grpc/CMakeLists.txt ${GRPC_BUILD}
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/contrib/cmake/patches/grpc/CMakeLists.txt ${GRPC_BUILD}
     BUILD_COMMAND ${CMAKE_COMMAND} --build . --config Release --target grpc++_unsecure
     COMMAND ${CMAKE_COMMAND} --build . --config Release --target grpc_cpp_plugin
     INSTALL_COMMAND ""

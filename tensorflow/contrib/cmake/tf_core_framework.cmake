@@ -23,6 +23,10 @@ function(RELATIVE_PROTOBUF_GENERATE_CPP SRCS HDRS ROOT_DIR)
     return()
   endif()
 
+  if (tensorflow_BUILD_DEPENDENCIES)
+    set(_protoc_dep ${PROTOBUF_PROTOC_EXECUTABLE})
+  endif()
+
   set(${SRCS})
   set(${HDRS})
   foreach(FIL ${ARGN})
@@ -39,9 +43,12 @@ function(RELATIVE_PROTOBUF_GENERATE_CPP SRCS HDRS ROOT_DIR)
              "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb.h"
       COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
       ARGS --cpp_out  ${CMAKE_CURRENT_BINARY_DIR} -I ${ROOT_DIR} ${ABS_FIL} -I ${PROTOBUF_INCLUDE_DIRS}
-      DEPENDS ${ABS_FIL} protobuf
+      DEPENDS ${ABS_FIL} ${_protoc_dep}
       COMMENT "Running C++ protocol buffer compiler on ${FIL}"
       VERBATIM )
+    if (tensorflow_BUILD_LIBRARIES)
+      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb.h" DESTINATION "include/${REL_DIR}")
+    endif()
   endforeach()
 
   set_source_files_properties(${${SRCS}} ${${HDRS}} PROPERTIES GENERATED TRUE)
@@ -93,6 +100,10 @@ function(RELATIVE_PROTOBUF_TEXT_GENERATE_CPP SRCS HDRS ROOT_DIR)
     return()
   endif()
 
+  if (tensorflow_BUILD_PROTO_TEXT)
+    set(_proto_text_dep ${PROTO_TEXT_EXE})
+  endif()
+
   set(${SRCS})
   set(${HDRS})
   foreach(FIL ${ARGN})
@@ -109,9 +120,12 @@ function(RELATIVE_PROTOBUF_TEXT_GENERATE_CPP SRCS HDRS ROOT_DIR)
              "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb_text.h"
       COMMAND ${PROTO_TEXT_EXE}
       ARGS "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}" ${REL_DIR} ${ABS_FIL} "${ROOT_DIR}/tensorflow/tools/proto_text/placeholder.txt"
-      DEPENDS ${ABS_FIL} ${PROTO_TEXT_EXE}
+      DEPENDS ${ABS_FIL} ${_proto_text_dep}
       COMMENT "Running C++ protocol buffer text compiler (${PROTO_TEXT_EXE}) on ${FIL}"
       VERBATIM )
+    if (tensorflow_BUILD_LIBRARIES)
+      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb_text.h" DESTINATION "include/${REL_DIR}")
+    endif()
   endforeach()
 
   set_source_files_properties(${${SRCS}} ${${HDRS}} PROPERTIES GENERATED TRUE)
@@ -128,7 +142,7 @@ file(GLOB_RECURSE tf_protos_cc_srcs RELATIVE ${tensorflow_source_dir}
     "${tensorflow_source_dir}/tensorflow/contrib/boosted_trees/proto/*.proto"
 )
 RELATIVE_PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS
-    ${tensorflow_source_dir} ${tf_protos_cc_srcs}
+    ${tensorflow_SOURCE_DIR} ${tf_protos_cc_srcs}
 )
 
 
@@ -169,7 +183,7 @@ set(tf_proto_text_srcs
     "tensorflow/core/util/saved_tensor_slice.proto"
 )
 RELATIVE_PROTOBUF_TEXT_GENERATE_CPP(PROTO_TEXT_SRCS PROTO_TEXT_HDRS
-    ${tensorflow_source_dir} ${tf_proto_text_srcs}
+    ${tensorflow_SOURCE_DIR} ${tf_proto_text_srcs}
 )
 
 if(WIN32)
@@ -188,10 +202,52 @@ endif()
 # tf_core_lib library
 ########################################################
 file(GLOB_RECURSE tf_core_lib_srcs
-    "${tensorflow_source_dir}/tensorflow/core/lib/*.h"
-    "${tensorflow_source_dir}/tensorflow/core/lib/*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/public/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/core/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/core/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/gtl/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/gtl/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/hash/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/hash/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/histogram/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/histogram/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/io/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/io/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/math/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/math/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/monitoring/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/monitoring/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/random/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/random/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/strings/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/strings/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/wav/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/wav/*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/public/*.h"
 )
+
+if(tensorflow_ENABLE_GIF)
+    file(GLOB tf_core_lib_gif_srcs
+        "${tensorflow_source_dir}/tensorflow/core/lib/gif/*.h"
+        "${tensorflow_source_dir}/tensorflow/core/lib/gif/*.cc"
+    )
+    list(APPEND tf_core_lib_srcs ${tf_core_lib_gif_srcs})
+endif()
+
+if(tensorflow_ENABLE_JPEG)
+    file(GLOB tf_core_lib_jpeg_srcs
+        "${tensorflow_source_dir}/tensorflow/core/lib/jpeg/*.h"
+        "${tensorflow_source_dir}/tensorflow/core/lib/jpeg/*.cc"
+    )
+    list(APPEND tf_core_lib_srcs ${tf_core_lib_jpeg_srcs})
+endif()
+
+if(tensorflow_ENABLE_PNG)
+    file(GLOB tf_core_lib_png_srcs
+        "${tensorflow_source_dir}/tensorflow/core/lib/png/*.h"
+        "${tensorflow_source_dir}/tensorflow/core/lib/png/*.cc"
+    )
+    list(APPEND tf_core_lib_srcs ${tf_core_lib_png_srcs})
+endif()
 
 file(GLOB tf_core_platform_srcs
     "${tensorflow_source_dir}/tensorflow/core/platform/*.h"
@@ -219,18 +275,18 @@ list(APPEND tf_core_lib_srcs ${tf_core_platform_srcs})
 
 if(UNIX)
   file(GLOB tf_core_platform_posix_srcs
-      "${tensorflow_source_dir}/tensorflow/core/platform/posix/*.h"
-      "${tensorflow_source_dir}/tensorflow/core/platform/posix/*.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/posix/*.h"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/posix/*.cc"
   )
   list(APPEND tf_core_lib_srcs ${tf_core_platform_posix_srcs})
 endif(UNIX)
 
 if(WIN32)
   file(GLOB tf_core_platform_windows_srcs
-      "${tensorflow_source_dir}/tensorflow/core/platform/windows/*.h"
-      "${tensorflow_source_dir}/tensorflow/core/platform/windows/*.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/posix/error.h"
-      "${tensorflow_source_dir}/tensorflow/core/platform/posix/error.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/windows/*.h"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/windows/*.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/posix/error.h"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/posix/error.cc"
   )
   list(APPEND tf_core_lib_srcs ${tf_core_platform_windows_srcs})
 endif(WIN32)
@@ -238,8 +294,8 @@ endif(WIN32)
 if(tensorflow_ENABLE_SSL_SUPPORT)
   # Cloud libraries require boringssl.
   file(GLOB tf_core_platform_cloud_srcs
-      "${tensorflow_source_dir}/tensorflow/core/platform/cloud/*.h"
-      "${tensorflow_source_dir}/tensorflow/core/platform/cloud/*.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/cloud/*.h"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/cloud/*.cc"
   )
   list(APPEND tf_core_lib_srcs ${tf_core_platform_cloud_srcs})
 endif()
@@ -253,11 +309,11 @@ if (tensorflow_ENABLE_HDFS_SUPPORT)
 endif()
 
 file(GLOB_RECURSE tf_core_lib_test_srcs
-    "${tensorflow_source_dir}/tensorflow/core/lib/*test*.h"
-    "${tensorflow_source_dir}/tensorflow/core/lib/*test*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/platform/*test*.h"
-    "${tensorflow_source_dir}/tensorflow/core/platform/*test*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/public/*test*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/*test*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/*test*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/*test*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/*test*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/public/*test*.h"
 )
 list(REMOVE_ITEM tf_core_lib_srcs ${tf_core_lib_test_srcs})
 
@@ -316,7 +372,6 @@ list(REMOVE_ITEM tf_core_framework_srcs ${tf_core_framework_exclude_srcs})
 
 add_library(tf_core_framework OBJECT
     ${tf_core_framework_srcs}
-    ${tf_version_srcs}
     ${PROTO_TEXT_HDRS}
     ${PROTO_TEXT_SRCS})
 add_dependencies(tf_core_framework
@@ -329,3 +384,6 @@ if(WIN32)
   # Instead of defining this global, limit it to tf_core_framework where its used.
   target_compile_definitions(tf_core_framework PRIVATE __VERSION__="MSVC")
 endif()
+
+InstallTFHeaders(tf_core_lib_srcs ${tensorflow_SOURCE_DIR} include)
+InstallTFHeaders(tf_core_framework_srcs ${tensorflow_SOURCE_DIR} include)
