@@ -1,20 +1,22 @@
 # Minimum CMake required
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.4)
 
 # Project
 project(tensorflow C CXX)
 
 # Set C++14 as standard for the whole project
-set(CMAKE_CXX_STANDARD 14)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQL "GNU")
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
+else()
+    set(CMAKE_CXX_STANDARD 14)
+endif()
 
-# Actual source is the ../../.. directory
-get_filename_component(tf_contrib_source_dir ${tensorflow_SOURCE_DIR} PATH)
-get_filename_component(tf_tf_source_dir ${tf_contrib_source_dir} PATH)
-get_filename_component(tensorflow_source_dir ${tf_tf_source_dir} PATH)
+list(INSERT CMAKE_MODULE_PATH 0 "${tensorflow_SOURCE_DIR}/tensorflow/contrib/cmake")
 
-# [CLEANUP] Not sure if this is needed (copied from Protobuf)
-# CMake policies
-cmake_policy(SET CMP0022 NEW)
+# For compatibility with the original rules that had CMakeLists.txt
+# in with the cmake modules, rather than at the top of the tree
+set(tensorflow_source_dir "${tensorflow_SOURCE_DIR}")
 
 # Options
 option(tensorflow_VERBOSE "Enable for verbose output" OFF)
@@ -27,6 +29,11 @@ option(tensorflow_BUILD_ALL_KERNELS "Build all OpKernels" ON)
 option(tensorflow_BUILD_CONTRIB_KERNELS "Build OpKernels from tensorflow/contrib/..." ON)
 option(tensorflow_BUILD_CC_TESTS "Build cc unit tests " OFF)
 option(tensorflow_BUILD_PYTHON_TESTS "Build python unit tests " OFF)
+option(tensorflow_BUILD_DEPENDENCIES "Download and build dependent packages" OFF)
+option(tensorflow_ENABLE_GIF "Enable GIF support" OFF)
+option(tensorflow_ENABLE_JPEG "Enable JPEG support" OFF)
+option(tensorflow_ENABLE_PNG "Enable PNG support" OFF)
+option(tensorflow_BUILD_LIBRARIES "Build and install libraries and headers" ON)
 
 if (NOT WIN32)
   # Threads: defines CMAKE_THREAD_LIBS_INIT and adds -pthread compile option
@@ -66,26 +73,23 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-fno-exceptions -std=c++11")
-endif()
-
 # External dependencies
-include(zlib)
-include(gif)
-include(png)
-include(jpeg)
-include(eigen)
-include(gemmlowp)
-include(jsoncpp)
-include(farmhash)
-include(highwayhash)
-include(protobuf)
-if (tensorflow_BUILD_CC_TESTS)
-  include(googletest)
-endif()
+if (tensorflow_BUILD_DEPENDENCIES)
+  include(zlib)
+  include(gif)
+  include(png)
+  include(jpeg)
+  include(eigen)
+  include(gemmlowp)
+  include(jsoncpp)
+  include(farmhash)
+  include(highwayhash)
+  include(protobuf)
+  if (tensorflow_BUILD_CC_TESTS)
+    include(googletest)
+  endif()
 
-set(tensorflow_EXTERNAL_LIBRARIES
+  set(tensorflow_EXTERNAL_LIBRARIES
     ${zlib_STATIC_LIBRARIES}
     ${gif_STATIC_LIBRARIES}
     ${png_STATIC_LIBRARIES}
@@ -94,8 +98,8 @@ set(tensorflow_EXTERNAL_LIBRARIES
     ${farmhash_STATIC_LIBRARIES}
     ${highwayhash_STATIC_LIBRARIES}
     ${protobuf_STATIC_LIBRARIES}
-)
-set(tensorflow_EXTERNAL_DEPENDENCIES
+  )
+  set(tensorflow_EXTERNAL_DEPENDENCIES
     zlib_copy_headers_to_destination
     gif_copy_headers_to_destination
     png_copy_headers_to_destination
@@ -106,9 +110,9 @@ set(tensorflow_EXTERNAL_DEPENDENCIES
     protobuf
     eigen
     gemmlowp
-)
+  )
 
-include_directories(
+  include_directories(
     # Source and generated code.
     ${tensorflow_source_dir}
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -123,20 +127,83 @@ include_directories(
     ${farmhash_INCLUDE_DIR}
     ${highwayhash_INCLUDE_DIR}
     ${PROTOBUF_INCLUDE_DIRS}
-)
+  )
 
-if(tensorflow_ENABLE_SSL_SUPPORT)
-  include(boringssl)
-  list(APPEND tensorflow_EXTERNAL_LIBRARIES ${boringssl_STATIC_LIBRARIES})
-  list(APPEND tensorflow_EXTERNAL_DEPENDENCIES boringssl)
-  include_directories(${boringssl_INCLUDE_DIR})
-endif()
-if(tensorflow_ENABLE_GRPC_SUPPORT)
-  include(grpc)
-  list(APPEND tensorflow_EXTERNAL_LIBRARIES ${grpc_STATIC_LIBRARIES})
-  list(APPEND tensorflow_EXTERNAL_DEPENDENCIES grpc)
-  include_directories(${GRPC_INCLUDE_DIRS})
-endif()
+  if(tensorflow_ENABLE_SSL_SUPPORT)
+    include(boringssl)
+    list(APPEND tensorflow_EXTERNAL_LIBRARIES ${boringssl_STATIC_LIBRARIES})
+    list(APPEND tensorflow_EXTERNAL_DEPENDENCIES boringssl)
+    include_directories(${boringssl_INCLUDE_DIR})
+  endif()
+  if(tensorflow_ENABLE_GRPC_SUPPORT)
+    include(grpc)
+    list(APPEND tensorflow_EXTERNAL_LIBRARIES ${grpc_STATIC_LIBRARIES})
+    list(APPEND tensorflow_EXTERNAL_DEPENDENCIES grpc)
+    include_directories(${GRPC_INCLUDE_DIRS})
+  endif()
+else()
+  find_package(PkgConfig)
+  find_package(ZLIB REQUIRED)
+  if (tensorflow_ENABLE_PNG)
+    pkg_check_modules(PNG libpng12)
+  endif()
+  if (tensorflow_ENABLE_GIF)
+    pkg_check_modules(GIF gif)
+  endif()
+  if (tensorflow_ENABLE_JPEG)
+    find_package(JPEG REQUIRED)
+  endif()
+  pkg_check_modules(JSONCPP jsoncpp)
+  pkg_check_modules(EIGEN3 eigen33-62bdceacdafa)
+  find_library(GEMMLOWP_LIBRARIES eight_bit_int_gemm)
+  find_path(GEMMLOWP_INCLUDE_DIR gemmlowp/public/gemmlowp.h)
+  set(GEMMLOWP_INCLUDE_DIR "${GEMMLOWP_INCLUDE_DIR}/gemmlowp" CACHE PATH "gemmlow include dir" FORCE)
+  find_library(FARMHASH_LIBRARIES farmhash)
+  find_library(HIGHWAYHASH_LIBRARIES highwayhash)
+  find_path(HIGHWAYHASH_INCLUDE_DIR highwayhash/sip_hash.h)
+  find_package(Protobuf REQUIRED)
+  if (tensorflow_ENABLE_GRPC_SUPPORT)
+    find_package(grpc REQUIRED)
+  endif()
+  if (tensorflow_ENABLE_SSL_SUPPORT)
+    find_package(OpenSSL REQUIRED)
+  endif()
+  set(tensorflow_EXTERNAL_LIBRARIES
+    ${ZLIB_LIBRARIES}
+    ${PNG_LIBRARIES}
+    ${JPEG_LIBRARIES}
+    ${GIF_LIBRARIES}
+    ${JSONCPP_LIBRARIES}
+    ${EIGEN3_LIBRARIES}
+    ${GEMMLOWP_LIBRARIES}
+    ${FARMHASH_LIBRARIES}
+    ${HIGHWAYHASH_LIBRARIES}
+    ${PROTOBUF_LIBRARIES}
+    ${OPENSSL_LIBRARIES}
+    ${GRPC_STATIC_LIBRARIES}
+  )
+  if (tensorflow_BUILD_CC_TESTS)
+    find_package(googletest REQUIRED)
+  endif()
+  include_directories(
+    # Source and generated code.
+    ${tensorflow_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${tensorflow_SOURCE_DIR}/third_party/eigen3
+    # External dependencies.
+    ${ZLIB_INCLUDE_DIR}
+    ${PNG_INCLUDE_DIRS}
+    ${JPEG_INCLUDE_DIR}
+    ${GIF_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIRS}
+    ${GEMMLOWP_INCLUDE_DIR}
+    ${JSONCPP_INCLUDE_DIR}
+    ${HIGHWAYHASH_INCLUDE_DIR}
+    ${PROTOBUF_INCLUDE_DIRS}
+    ${OPENSSL_INCLUDE_DIRS}
+    ${GRPC_INCLUDE_DIRS}
+  )
+  
 if(WIN32)
   list(APPEND tensorflow_EXTERNAL_LIBRARIES wsock32 ws2_32 shlwapi)
 endif()
