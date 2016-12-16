@@ -1,1 +1,1 @@
-#include "Eigen/Eigenvalues"
+#include_next "Eigen/Eigenvalues"
