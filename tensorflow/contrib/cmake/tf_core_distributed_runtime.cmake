@@ -2,14 +2,14 @@
 # tf_core_distributed_runtime library
 ########################################################
 file(GLOB_RECURSE tf_core_distributed_runtime_srcs
-   "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/*.h"
-   "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/*.cc"
+   "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/*.h"
+   "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/*.cc"
 )
 
 file(GLOB_RECURSE tf_core_distributed_runtime_exclude_srcs
-    "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/*test*.h"
-    "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/*test*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/rpc/grpc_tensorflow_server.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/*test*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/*test*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/rpc/grpc_tensorflow_server.cc"
 )
 
 list(REMOVE_ITEM tf_core_distributed_runtime_srcs ${tf_core_distributed_runtime_exclude_srcs})
@@ -24,7 +24,7 @@ add_dependencies(tf_core_distributed_runtime
 # grpc_tensorflow_server executable
 ########################################################
 set(grpc_tensorflow_server_srcs
-    "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/rpc/grpc_tensorflow_server.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/rpc/grpc_tensorflow_server.cc"
 )
 
 add_executable(grpc_tensorflow_server

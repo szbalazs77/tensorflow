@@ -26,7 +26,7 @@ endfunction(GetTestRunPath)
 function(AddTests)
   cmake_parse_arguments(_AT "" "" "SOURCES;OBJECTS;LIBS;DATA;DEPENDS" ${ARGN})
   foreach(sourcefile ${_AT_SOURCES})
-    string(REPLACE "${tensorflow_source_dir}/" "" exename ${sourcefile})
+    string(REPLACE "${tensorflow_SOURCE_DIR}/" "" exename ${sourcefile})
     string(REPLACE ".cc" "" exename ${exename})
     string(REPLACE "/" "_" exename ${exename})
     AddTest(
@@ -140,10 +140,10 @@ if (tensorflow_BUILD_PYTHON_TESTS)
       # Nothing critical in here but should get this list down to []
       # The failing list is grouped by failure source
       # stl on windows handles overflows different
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/as_string_op_test.py"
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/cast_op_test.py"
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/string_to_number_op_test.py"
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/clip_ops_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/as_string_op_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/cast_op_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/string_to_number_op_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/clip_ops_test.py"
       # misc
       "${tensorflow_source_dir}/tensorflow/python/kernel_tests/variable_scope_test.py"
       "${tensorflow_source_dir}/tensorflow/python/kernel_tests/reshape_op_test.py"
@@ -181,19 +181,19 @@ if (tensorflow_BUILD_CC_TESTS)
 
   # cc tests wrapper
   set(tf_src_testlib
-    "${tensorflow_source_dir}/tensorflow/cc/framework/testutil.cc"
-    "${tensorflow_source_dir}/tensorflow/cc/gradients/grad_testutil.cc"
-    "${tensorflow_source_dir}/tensorflow/core/common_runtime/kernel_benchmark_testlib.cc"
-    "${tensorflow_source_dir}/tensorflow/core/framework/function_testlib.cc"
-    "${tensorflow_source_dir}/tensorflow/core/framework/shape_inference_testutil.cc"
-    "${tensorflow_source_dir}/tensorflow/core/framework/tensor_testutil.cc"
-    "${tensorflow_source_dir}/tensorflow/core/graph/testlib.cc"
-    "${tensorflow_source_dir}/tensorflow/core/platform/test.cc"
-    "${tensorflow_source_dir}/tensorflow/core/platform/test_main.cc"
-    "${tensorflow_source_dir}/tensorflow/core/platform/default/test_benchmark.cc"
-    "${tensorflow_source_dir}/tensorflow/c/c_api.cc"
-    "${tensorflow_source_dir}/tensorflow/c/checkpoint_reader.cc"
-    "${tensorflow_source_dir}/tensorflow/c/tf_status_helper.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/cc/framework/testutil.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/cc/gradients/grad_testutil.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/kernel_benchmark_testlib.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/function_testlib.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/shape_inference_testutil.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/tensor_testutil.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/graph/testlib.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/test_main.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/default/test_benchmark.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/checkpoint_reader.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/tf_status_helper.cc"
   )
 
   if(WIN32)
@@ -210,11 +210,11 @@ if (tensorflow_BUILD_CC_TESTS)
 
   # include all test
   file(GLOB_RECURSE tf_test_src_simple
-    "${tensorflow_source_dir}/tensorflow/cc/*_test.cc"
-    "${tensorflow_source_dir}/tensorflow/python/*_test.cc"
-    "${tensorflow_source_dir}/tensorflow/core/*_test.cc"
-    "${tensorflow_source_dir}/tensorflow/user_ops/*_test.cc"
-    "${tensorflow_source_dir}/tensorflow/contrib/rnn/*_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/cc/*_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/*_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/*_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/user_ops/*_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/contrib/rnn/*_test.cc"
   )
 
   # exclude the ones we don't want
@@ -230,12 +230,12 @@ if (tensorflow_BUILD_CC_TESTS)
     # exclude gpu tests if we are not buildig for gpu
     set(tf_test_src_simple_exclude
       ${tf_test_src_simple_exclude}
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_allocator_retry_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_bfc_allocator_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_debug_allocator_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_event_mgr_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_stream_util_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/pool_allocator_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_allocator_retry_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_bfc_allocator_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_debug_allocator_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_event_mgr_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_stream_util_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/pool_allocator_test.cc"
     )
   endif()
 

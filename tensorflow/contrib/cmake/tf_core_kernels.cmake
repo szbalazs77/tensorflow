@@ -4,23 +4,23 @@
 
 if(tensorflow_BUILD_ALL_KERNELS)
   file(GLOB_RECURSE tf_core_kernels_srcs
-     "${tensorflow_source_dir}/tensorflow/core/kernels/*.h"
-     "${tensorflow_source_dir}/tensorflow/core/kernels/*.cc"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*.h"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*.cc"
   )
 else(tensorflow_BUILD_ALL_KERNELS)
   # Build a minimal subset of kernels to be able to run a test program.
   set(tf_core_kernels_srcs
-     "${tensorflow_source_dir}/tensorflow/core/kernels/bounds_check.h"
-     "${tensorflow_source_dir}/tensorflow/core/kernels/constant_op.h"
-     "${tensorflow_source_dir}/tensorflow/core/kernels/constant_op.cc"
-     "${tensorflow_source_dir}/tensorflow/core/kernels/fill_functor.h"
-     "${tensorflow_source_dir}/tensorflow/core/kernels/fill_functor.cc"
-     "${tensorflow_source_dir}/tensorflow/core/kernels/matmul_op.h"
-     "${tensorflow_source_dir}/tensorflow/core/kernels/matmul_op.cc"
-     "${tensorflow_source_dir}/tensorflow/core/kernels/no_op.h"
-     "${tensorflow_source_dir}/tensorflow/core/kernels/no_op.cc"
-     "${tensorflow_source_dir}/tensorflow/core/kernels/sendrecv_ops.h"
-     "${tensorflow_source_dir}/tensorflow/core/kernels/sendrecv_ops.cc"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/bounds_check.h"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/constant_op.h"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/constant_op.cc"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/fill_functor.h"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/fill_functor.cc"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/matmul_op.h"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/matmul_op.cc"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/no_op.h"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/no_op.cc"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/sendrecv_ops.h"
+     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/sendrecv_ops.cc"
   )
 endif(tensorflow_BUILD_ALL_KERNELS)
 
@@ -76,15 +76,35 @@ list(REMOVE_ITEM tf_core_kernels_srcs ${tf_core_kernels_cloud_srcs})
 endif()
 
 file(GLOB_RECURSE tf_core_kernels_exclude_srcs
-   "${tensorflow_source_dir}/tensorflow/core/kernels/*test*.h"
-   "${tensorflow_source_dir}/tensorflow/core/kernels/*test*.cc"
-   "${tensorflow_source_dir}/tensorflow/core/kernels/*testutil.h"
-   "${tensorflow_source_dir}/tensorflow/core/kernels/*testutil.cc"
-   "${tensorflow_source_dir}/tensorflow/core/kernels/*main.cc"
-   "${tensorflow_source_dir}/tensorflow/core/kernels/*.cu.cc"
-   "${tensorflow_source_dir}/tensorflow/core/kernels/debug_ops.h"  # stream_executor dependency
-   "${tensorflow_source_dir}/tensorflow/core/kernels/debug_ops.cc"  # stream_executor dependency
+   "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*test*.h"
+   "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*test*.cc"
+   "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*testutil.h"
+   "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*testutil.cc"
+   "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*main.cc"
+   "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*.cu.cc"
+   "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/debug_ops.h"  # stream_executor dependency
+   "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/debug_ops.cc"  # stream_executor dependency
 )
+
+if (NOT tensorflow_ENABLE_GIF)
+    file(GLOB tf_core_kernels_gif_srcs
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*gif*")
+    list(APPEND tf_core_kernels_exclude_srcs ${tf_core_kernels_gif_srcs})
+endif()
+
+if (NOT tensorflow_ENABLE_JPEG)
+    file(GLOB tf_core_kernels_jpeg_srcs
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*jpeg*")
+    list(APPEND tf_core_kernels_exclude_srcs ${tf_core_kernels_jpeg_srcs})
+endif()
+
+if (NOT tensorflow_ENABLE_PNG)
+    file(GLOB tf_core_kernels_png_srcs
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*png*"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*summary_image*")
+    list(APPEND tf_core_kernels_exclude_srcs ${tf_core_kernels_png_srcs})
+endif()
+
 list(REMOVE_ITEM tf_core_kernels_srcs ${tf_core_kernels_exclude_srcs})
 
 if(WIN32)
@@ -98,8 +118,8 @@ if(WIN32)
 endif(WIN32)
 
 file(GLOB_RECURSE tf_core_gpu_kernels_srcs
-   "${tensorflow_source_dir}/tensorflow/core/kernels/*.cu.cc"
-   "${tensorflow_source_dir}/tensorflow/contrib/rnn/kernels/*.cu.cc"
+   "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/*.cu.cc"
+   "${tensorflow_SOURCE_DIR}/tensorflow/contrib/rnn/kernels/*.cu.cc"
 )
 
 if(WIN32 AND tensorflow_ENABLE_GPU)
@@ -136,3 +156,5 @@ if(WIN32)
     add_dependencies(${tf_core_gpu_kernels_lib} tf_core_cpu)
   endif()
 endif()
+
+InstallTFHeaders(tf_core_kernels_srcs ${tensorflow_SOURCE_DIR} include)
