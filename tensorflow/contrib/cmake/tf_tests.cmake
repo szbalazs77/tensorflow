@@ -26,7 +26,7 @@ endfunction(GetTestRunPath)
 function(AddTests)
   cmake_parse_arguments(_AT "" "" "SOURCES;OBJECTS;LIBS;DATA;DEPENDS" ${ARGN})
   foreach(sourcefile ${_AT_SOURCES})
-    string(REPLACE "${tensorflow_source_dir}/" "" exename ${sourcefile})
+    string(REPLACE "${tensorflow_SOURCE_DIR}/" "" exename ${sourcefile})
     string(REPLACE ".cc" "" exename ${exename})
     string(REPLACE "/" "_" exename ${exename})
     AddTest(
@@ -115,52 +115,52 @@ if (tensorflow_BUILD_PYTHON_TESTS)
   
   # include all test
   file(GLOB_RECURSE tf_test_src_py
-    "${tensorflow_source_dir}/tensorflow/python/kernel_tests/*.py"
-    "${tensorflow_source_dir}/tensorflow/python/training/*_test.py"
-    "${tensorflow_source_dir}/tensorflow/tensorboard/*_test.py"
-    "${tensorflow_source_dir}/tensorflow/models/*_test.py"
-    "${tensorflow_source_dir}/tensorflow/contrib/metrics/*_test.py"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/*.py"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/training/*_test.py"
+    "${tensorflow_SOURCE_DIR}/tensorflow/tensorboard/*_test.py"
+    "${tensorflow_SOURCE_DIR}/tensorflow/models/*_test.py"
+    "${tensorflow_SOURCE_DIR}/tensorflow/contrib/metrics/*_test.py"
   )
 
   # exclude the onces we don't want
   set(tf_test_src_py_exclude
     # generally not working
-    "${tensorflow_source_dir}/tensorflow/python/kernel_tests/__init__.py"
-	"${tensorflow_source_dir}/tensorflow/python/kernel_tests/benchmark_test.py"
-    "${tensorflow_source_dir}/tensorflow/python/kernel_tests/resource_variable_ops_test.py"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/__init__.py"
+	"${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/benchmark_test.py"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/resource_variable_ops_test.py"
   )  
   if (WIN32)
     set(tf_test_src_py_exclude
       ${tf_test_src_py_exclude}
       # generally excluded
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/__init__.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/__init__.py"
       
       # TODO: failing tests. 
       # Nothing critical in here but should get this list down to []
       # The failing list is grouped by failure source
       # stl on windows handles overflows different
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/as_string_op_test.py"
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/cast_op_test.py"
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/string_to_number_op_test.py"
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/clip_ops_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/as_string_op_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/cast_op_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/string_to_number_op_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/clip_ops_test.py"
       # misc
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/variable_scope_test.py"
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/reshape_op_test.py"
-      "${tensorflow_source_dir}/tensorflow/tensorboard/backend/server_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/variable_scope_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/reshape_op_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/tensorboard/backend/server_test.py"
       # int32/int64 mixup
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/functional_ops_test.py"
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/py_func_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/functional_ops_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/py_func_test.py"
       # cuda launch failed
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/diag_op_test.py"
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/trace_op_test.py"
-      "${tensorflow_source_dir}/tensorflow/python/kernel_tests/one_hot_op_test.py" # gpu, T=uint8
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/diag_op_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/trace_op_test.py"
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/kernel_tests/one_hot_op_test.py" # gpu, T=uint8
       # training tests
-      "${tensorflow_source_dir}/tensorflow/python/training/basic_session_run_hooks_test.py"  # Needs tf.contrib fix.
-      "${tensorflow_source_dir}/tensorflow/python/training/localhost_cluster_performance_test.py"  # Needs portpicker.
-      "${tensorflow_source_dir}/tensorflow/python/training/monitored_session_test.py"  # Needs tf.contrib fix.
-      "${tensorflow_source_dir}/tensorflow/python/training/saver_large_variable_test.py"  # Overflow error.
-      "${tensorflow_source_dir}/tensorflow/python/training/supervisor_test.py"  # Flaky I/O error on rename.
-      "${tensorflow_source_dir}/tensorflow/python/training/sync_replicas_optimizer_test.py"  # Needs portpicker.
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/training/basic_session_run_hooks_test.py"  # Needs tf.contrib fix.
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/training/localhost_cluster_performance_test.py"  # Needs portpicker.
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/training/monitored_session_test.py"  # Needs tf.contrib fix.
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/training/saver_large_variable_test.py"  # Overflow error.
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/training/supervisor_test.py"  # Flaky I/O error on rename.
+      "${tensorflow_SOURCE_DIR}/tensorflow/python/training/sync_replicas_optimizer_test.py"  # Needs portpicker.
     )
   endif()
   list(REMOVE_ITEM tf_test_src_py ${tf_test_src_py_exclude})
@@ -182,170 +182,170 @@ if (tensorflow_BUILD_CC_TESTS)
 
   # cc tests wrapper
   set(tf_src_testlib
-    "${tensorflow_source_dir}/tensorflow/cc/framework/testutil.cc"
-    "${tensorflow_source_dir}/tensorflow/cc/gradients/grad_testutil.cc"
-    "${tensorflow_source_dir}/tensorflow/core/common_runtime/kernel_benchmark_testlib.cc"
-    "${tensorflow_source_dir}/tensorflow/core/framework/function_testlib.cc"
-    "${tensorflow_source_dir}/tensorflow/core/framework/shape_inference_testutil.cc"
-    "${tensorflow_source_dir}/tensorflow/core/framework/tensor_testutil.cc"
-    "${tensorflow_source_dir}/tensorflow/core/graph/testlib.cc"
-    "${tensorflow_source_dir}/tensorflow/core/platform/test.cc"
-    "${tensorflow_source_dir}/tensorflow/core/platform/test_main.cc"
-    "${tensorflow_source_dir}/tensorflow/core/platform/default/test_benchmark.cc"
-    "${tensorflow_source_dir}/tensorflow/c/c_api.cc"
-    "${tensorflow_source_dir}/tensorflow/c/checkpoint_reader.cc"
-    "${tensorflow_source_dir}/tensorflow/c/tf_status_helper.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/cc/framework/testutil.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/cc/gradients/grad_testutil.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/kernel_benchmark_testlib.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/function_testlib.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/shape_inference_testutil.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/tensor_testutil.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/graph/testlib.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/test_main.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/default/test_benchmark.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/checkpoint_reader.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/tf_status_helper.cc"
   )
 
   # include all test
   file(GLOB_RECURSE tf_test_src_simple
-    "${tensorflow_source_dir}/tensorflow/cc/*_test.cc"
-    "${tensorflow_source_dir}/tensorflow/python/*_test.cc"
-    "${tensorflow_source_dir}/tensorflow/core/*_test.cc"
-    "${tensorflow_source_dir}/tensorflow/user_ops/*_test.cc"
-    "${tensorflow_source_dir}/tensorflow/contrib/rnn/*_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/cc/*_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/*_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/*_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/user_ops/*_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/contrib/rnn/*_test.cc"
   )
 
   if (NOT tensorflow_ENABLE_GPU)
     # exclude gpu tests if we are not buildig for gpu
     set(tf_test_src_simple_exclude
       ${tf_test_src_simple_exclude}
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_allocator_retry_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_bfc_allocator_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_debug_allocator_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_event_mgr_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_stream_util_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/pool_allocator_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_allocator_retry_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_bfc_allocator_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_debug_allocator_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_event_mgr_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_stream_util_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/pool_allocator_test.cc"
     )
   endif()
 
   # exclude the onces we don't want
   set(tf_test_src_simple_exclude
     # generally not working
-    "${tensorflow_source_dir}/tensorflow/cc/client/client_session_test.cc"
-    "${tensorflow_source_dir}/tensorflow/cc/framework/gradients_test.cc"
-    "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/call_options_test.cc"
-    "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/tensor_coding_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/cc/client/client_session_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/cc/framework/gradients_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/call_options_test.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/tensor_coding_test.cc"
   )
 
   if (WIN32)
     set(tf_test_src_simple_exclude
       ${tf_test_src_simple_exclude}
       # generally excluded
-      "${tensorflow_source_dir}/tensorflow/contrib/ffmpeg/default/ffmpeg_lib_test.cc"
-      "${tensorflow_source_dir}/tensorflow/cc/framework/cc_ops_test.cc" # test_op.h missing
+      "${tensorflow_SOURCE_DIR}/tensorflow/contrib/ffmpeg/default/ffmpeg_lib_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/cc/framework/cc_ops_test.cc" # test_op.h missing
  
       # TODO: test failing
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/simple_placer_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/executor_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantized_reshape_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/requantization_range_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/requantize_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/restore_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/restore_v2_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/save_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/sparse_reduce_sum_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/restore_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantize_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/lib/core/status_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/lib/strings/str_util_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/lib/strings/numbers_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/lib/monitoring/collection_registry_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/util/tensor_slice_reader_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/file_system_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/logging_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/env_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/ops/math_grad_test.cc"
-      "${tensorflow_source_dir}/tensorflow/contrib/cudnn_rnn/cudnn_rnn_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/contrib/rnn/ops/gru_ops_test.cc" # status 5
-      "${tensorflow_source_dir}/tensorflow/contrib/rnn/ops/lstm_ops_test.cc" # status 5
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/simple_placer_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/executor_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantized_reshape_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/requantization_range_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/requantize_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/restore_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/restore_v2_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/save_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/sparse_reduce_sum_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/restore_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantize_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/core/status_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/strings/str_util_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/strings/numbers_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/monitoring/collection_registry_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/util/tensor_slice_reader_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/file_system_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/logging_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/env_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/ops/math_grad_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/contrib/cudnn_rnn/cudnn_rnn_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/contrib/rnn/ops/gru_ops_test.cc" # status 5
+      "${tensorflow_SOURCE_DIR}/tensorflow/contrib/rnn/ops/lstm_ops_test.cc" # status 5
 
       # TODO: not compiling 
-      "${tensorflow_source_dir}/tensorflow/cc/framework/gradient_checker_test.cc"
-      "${tensorflow_source_dir}/tensorflow/cc/gradients/math_grad_test.cc"
-      "${tensorflow_source_dir}/tensorflow/cc/gradients/array_grad_test.cc"
-      "${tensorflow_source_dir}/tensorflow/cc/saved_model/loader_test.cc"
-      "${tensorflow_source_dir}/tensorflow/cc/training/queue_runner_test.cc"
-      "${tensorflow_source_dir}/tensorflow/cc/training/coordinator_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/nn_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantization_utils_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/activation_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/batch_norm_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/bias_add_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/concat_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/conv_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/matmul_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/pooling_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantize_and_dequantize_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantize_down_and_shrink_range_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/parameterized_truncated_normal_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/non_max_suppression_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/fused_batch_norm_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/eigen_backward_spatial_convolutions_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/hexagon/quantized_matmul_op_for_hexagon_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/hexagon/hexagon_graph_transferer_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/adjust_contrast_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/batch_norm_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/cast_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/colorspace_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/control_flow_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/conv_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/debug_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/resize_bilinear_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/resize_nearest_neighbor_op_benchmark_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/spacetobatch_benchmark_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/sparse_add_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/sparse_dense_binary_op_shared_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/sparse_tensor_dense_matmul_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/summary_image_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/summary_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantized_activation_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantized_bias_add_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantized_concat_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantized_conv_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantized_matmul_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantized_pooling_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/kernels/quantized_batch_norm_op_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/cloud/gcs_file_system_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/cloud/google_auth_provider_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/cloud/http_request_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/cloud/oauth_client_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/cloud/retrying_file_system_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/cloud/time_util_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/hadoop/hadoop_file_system_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/port_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/profile_utils/cpu_utils_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/direct_session_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/direct_session_with_tracking_alloc_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_allocator_retry_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/common_runtime/gpu/gpu_debug_allocator_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/master_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/remote_device_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/rpc/grpc_channel_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/rpc/grpc_session_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/rpc/grpc_tensor_coding_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/rpc/rpc_rendezvous_mgr_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/distributed_runtime/master_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/framework/partial_tensor_shape_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/lib/core/notification_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/lib/gtl/cleanup_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/lib/gtl/edit_distance_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/lib/strings/strcat_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/ops/array_grad_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/ops/nn_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/example/example_parser_configuration_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/example/feature_util_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/util/reporter_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/util/memmapped_file_system_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/util/sparse_sparse_tensor_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/debug/debug_gateway_test.cc"
-      "${tensorflow_source_dir}/tensorflow/core/debug/debug_io_utils_test.cc"
-      "${tensorflow_source_dir}/tensorflow/contrib/factorization/kernels/clustering_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/contrib/session_bundle/bundle_shim_test.cc"
-      "${tensorflow_source_dir}/tensorflow/contrib/session_bundle/bundle_test.cc"
-      "${tensorflow_source_dir}/tensorflow/contrib/session_bundle/signature_test.cc"
-      "${tensorflow_source_dir}/tensorflow/contrib/tensor_forest/core/ops/training_ops_test.cc"
-      "${tensorflow_source_dir}/tensorflow/contrib/tensor_forest/core/ops/tree_utils_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/cc/framework/gradient_checker_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/cc/gradients/math_grad_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/cc/gradients/array_grad_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/cc/saved_model/loader_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/cc/training/queue_runner_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/cc/training/coordinator_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/nn_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantization_utils_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/activation_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/batch_norm_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/bias_add_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/concat_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/conv_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/matmul_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/pooling_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantize_and_dequantize_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantize_down_and_shrink_range_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/parameterized_truncated_normal_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/non_max_suppression_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/fused_batch_norm_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/eigen_backward_spatial_convolutions_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/hexagon/quantized_matmul_op_for_hexagon_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/hexagon/hexagon_graph_transferer_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/adjust_contrast_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/batch_norm_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/cast_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/colorspace_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/control_flow_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/conv_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/debug_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/resize_bilinear_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/resize_nearest_neighbor_op_benchmark_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/spacetobatch_benchmark_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/sparse_add_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/sparse_dense_binary_op_shared_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/sparse_tensor_dense_matmul_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/summary_image_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/summary_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantized_activation_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantized_bias_add_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantized_concat_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantized_conv_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantized_matmul_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantized_pooling_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/quantized_batch_norm_op_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/cloud/gcs_file_system_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/cloud/google_auth_provider_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/cloud/http_request_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/cloud/oauth_client_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/cloud/retrying_file_system_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/cloud/time_util_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/hadoop/hadoop_file_system_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/port_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/profile_utils/cpu_utils_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/direct_session_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/direct_session_with_tracking_alloc_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_allocator_retry_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/gpu/gpu_debug_allocator_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/master_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/remote_device_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/rpc/grpc_channel_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/rpc/grpc_session_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/rpc/grpc_tensor_coding_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/rpc/rpc_rendezvous_mgr_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/distributed_runtime/master_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/partial_tensor_shape_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/core/notification_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/gtl/cleanup_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/gtl/edit_distance_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/strings/strcat_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/ops/array_grad_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/ops/nn_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/example/example_parser_configuration_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/example/feature_util_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/util/reporter_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/util/memmapped_file_system_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/util/sparse_sparse_tensor_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/debug/debug_gateway_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/debug/debug_io_utils_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/contrib/factorization/kernels/clustering_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/contrib/session_bundle/bundle_shim_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/contrib/session_bundle/bundle_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/contrib/session_bundle/signature_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/contrib/tensor_forest/core/ops/training_ops_test.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/contrib/tensor_forest/core/ops/tree_utils_test.cc"
     )
   endif()
 

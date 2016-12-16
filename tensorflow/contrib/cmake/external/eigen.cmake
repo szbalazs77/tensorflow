@@ -8,7 +8,7 @@
 include (ExternalProject)
 
 # We parse the current Eigen version and archive hash from the bazel configuration
-file(STRINGS ${PROJECT_SOURCE_DIR}/../../workspace.bzl workspace_contents)
+file(STRINGS ${PROJECT_SOURCE_DIR}/tensorflow/workspace.bzl workspace_contents)
 foreach(line ${workspace_contents})
     string(REGEX MATCH ".*eigen_version.*=.*\"(.*)\"" has_version ${line})
     if(has_version)

@@ -4,8 +4,22 @@ cmake_minimum_required(VERSION 3.4)
 # Project
 project(tensorflow C CXX)
 
+set(tensorflow_VERSION_MAJOR "0")
+set(tensorflow_VERSION_MINOR "12")
+set(tensorflow_VERSION_PATCH "0")
+set(tensorflow_VERSION "${tensorflow_VERSION_MAJOR}.${tensorflow_VERSION_MINOR}.${tensorflow_VERSION_PATCH}")
+execute_process(COMMAND git describe --long --dirty --tags
+                WORKING_DIRECTORY ${tensorflow_SOURCE_DIR}
+                OUTPUT_VARIABLE tensorflow_VERSION_STRING
+                RESULT_VARIABLE _tensorflow_git_result
+                ERROR_QUIET
+		OUTPUT_STRIP_TRAILING_WHITESPACE)
+if (NOT ${_tensorflow_git_result} EQUAL 0)
+  set(tensorflow_VERSION_STRING "unknown")
+endif()
+
 # Set C++14 as standard for the whole project
-if ("${CMAKE_CXX_COMPILER_ID}" STREQL "GNU")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_STANDARD 11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
 else()
@@ -30,6 +44,7 @@ option(tensorflow_BUILD_CONTRIB_KERNELS "Build OpKernels from tensorflow/contrib
 option(tensorflow_BUILD_CC_TESTS "Build cc unit tests " OFF)
 option(tensorflow_BUILD_PYTHON_TESTS "Build python unit tests " OFF)
 option(tensorflow_BUILD_DEPENDENCIES "Download and build dependent packages" OFF)
+option(tensorflow_BUILD_PROTO_TEXT "Build proto_text tool" ON)
 option(tensorflow_ENABLE_GIF "Enable GIF support" OFF)
 option(tensorflow_ENABLE_JPEG "Enable JPEG support" OFF)
 option(tensorflow_ENABLE_PNG "Enable PNG support" OFF)
@@ -50,8 +65,22 @@ function(SHOW_VARIABLES)
     endforeach()
 endfunction()
 
+function(InstallTFHeaders HDR_VAR BASE_DIR DEST_DIR)
+  if (tensorflow_BUILD_LIBRARIES)
+    string(LENGTH ${BASE_DIR} _base_len)
+    math(EXPR _substr_start "${_base_len} + 1")
+    foreach (_file ${${HDR_VAR}})
+      if (${_file} MATCHES "\\.h$")
+	get_filename_component(_dir ${_file} DIRECTORY)
+	string(SUBSTRING ${_dir} ${_substr_start} -1 _outdir)
+	install(FILES ${_file} DESTINATION ${DEST_DIR}/${_outdir})
+      endif()
+    endforeach()
+  endif()
+endfunction()
+
 # External dependencies
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/tensorflow/contrib/cmake/external)
 
 # Location where external projects will be downloaded
 set (DOWNLOAD_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/downloads"
@@ -203,6 +232,7 @@ else()
     ${OPENSSL_INCLUDE_DIRS}
     ${GRPC_INCLUDE_DIRS}
   )
+endif()
   
 if(WIN32)
   list(APPEND tensorflow_EXTERNAL_LIBRARIES wsock32 ws2_32 shlwapi)
@@ -249,37 +279,97 @@ if (tensorflow_ENABLE_GPU)
     include_directories(${tensorflow_source_dir}/third_party/gpus)
     # add cuda libraries to tensorflow_EXTERNAL_LIBRARIES
     list(APPEND tensorflow_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES})
+  else()
+    find_package(CUDA 8.0 REQUIRED)
+    find_package(CUDNN REQUIRED)
+
+    # by default we assume compute cabability 5.3. If you change this change it in
+    # cuda_config.h below
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--include-path ${PROJECT_BINARY_DIR}/$\{build_configuration\};--expt-relaxed-constexpr)
+    set(CUDA_INCLUDE ${CUDA_TOOLKIT_TARGET_DIR} ${CUDA_TOOLKIT_TARGET_DIR}/extras/CUPTI/include)
+    include_directories(${CUDA_INCLUDE})
+    add_definitions(-DGOOGLE_CUDA=1 -DTF_EXTRA_CUDA_CAPABILITIES=5.3)
+
+    # add cudnn
+    include_directories(${CUDNN_HOME})
+    set(CUDA_LIBRARIES ${CUDA_LIBRARIES} ${CUDNN_HOME}/lib/x64/cudnn.lib)
+
+    # create cuda_config.h
+    FILE(WRITE ${tensorflow_source_dir}/third_party/gpus/cuda/cuda_config.h
+      "#ifndef CUDA_CUDA_CONFIG_H_\n"
+      "#define CUDA_CUDA_CONFIG_H_\n"
+      "#define TF_CUDA_CAPABILITIES CudaVersion(\"5.3\")\n"
+      "#define TF_CUDA_VERSION \"64_80\"\n"
+      "#define TF_CUDNN_VERSION \"64_5\"\n"
+      "#endif  // CUDA_CUDA_CONFIG_H_\n"
+    )
+
+    # tf assumes in various places header files to be in cuda/include. On windows the cuda sdk
+    # installs them under cuda/version/include and to avoid that we need to change tf we copy a
+    # few files to cuda/include
+    FILE(COPY
+      ${CUDA_TOOLKIT_TARGET_DIR}/include/cuda.h ${CUDA_TOOLKIT_TARGET_DIR}/include/cuComplex.h
+      ${CUDA_TOOLKIT_TARGET_DIR}/include/cublas_v2.h ${CUDNN_HOME}/include/cudnn.h
+      ${CUDA_TOOLKIT_TARGET_DIR}/include/cufft.h ${CUDA_TOOLKIT_TARGET_DIR}/include/curand.h
+      DESTINATION ${tensorflow_source_dir}/third_party/gpus/cuda/include
+    )
+    include_directories(${tensorflow_source_dir}/third_party/gpus)
+    # add cuda libraries to tensorflow_EXTERNAL_LIBRARIES
+    list(APPEND tensorflow_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES})
   endif()
 endif()
 
 # Let's get to work!
-include(tf_core_framework.cmake)
-include(tf_tools.cmake)
+include(tf_core_framework)
+include(tf_tools)
 # NOTE: Disabled until issue #3996 is fixed.
-# include(tf_stream_executor.cmake)
+# include(tf_stream_executor)
 if (tensorflow_ENABLE_GPU)
   if (WIN32)
-    include(tf_stream_executor.cmake)
+    include(tf_stream_executor)
   endif()
 endif()
 
-include(tf_core_cpu.cmake)
-include(tf_models.cmake)
-include(tf_core_ops.cmake)
-include(tf_core_direct_session.cmake)
-include(tf_core_kernels.cmake)
+include(tf_core_cpu)
+include(tf_models)
+include(tf_core_ops)
+include(tf_core_direct_session)
+include(tf_core_kernels)
 if(tensorflow_ENABLE_GRPC_SUPPORT)
-  include(tf_core_distributed_runtime.cmake)
+  include(tf_core_distributed_runtime)
 endif()
-include(tf_cc_ops.cmake)
+include(tf_cc_ops)
 if(tensorflow_BUILD_CC_EXAMPLE)
-  include(tf_tutorials.cmake)
-  include(tf_label_image_example.cmake)
+  include(tf_tutorials)
+  include(tf_label_image_example)
 endif()
 if(tensorflow_BUILD_PYTHON_BINDINGS)
   include(tensorboard)
-  include(tf_python.cmake)
+  include(tf_python)
 endif()
 if (tensorflow_BUILD_CC_TESTS OR tensorflow_BUILD_PYTHON_TESTS)
-  include(tf_tests.cmake)
+  include(tf_tests)
 endif()
+
+if (tensorflow_BUILD_LIBRARIES)
+  add_library(tensorflow_c SHARED
+    $<TARGET_OBJECTS:tf_core_cpu>
+    $<TARGET_OBJECTS:tf_core_framework>
+    $<TARGET_OBJECTS:tf_core_lib>
+    "${tensorflow_source_dir}/tensorflow/c/c_api.cc"
+  )
+  set_target_properties(tensorflow_c PROPERTIES VERSION ${tensorflow_VERSION} SOVERSION ${tensorflow_VERSION_MAJOR})
+
+  add_library(tensorflow_cc SHARED
+    $<TARGET_OBJECTS:tf_core_cpu>
+    $<TARGET_OBJECTS:tf_core_framework>
+    $<TARGET_OBJECTS:tf_core_lib>
+    $<TARGET_OBJECTS:tf_cc_ops>
+    "${tensorflow_source_dir}/tensorflow/c/c_api.cc"
+  )
+  set_target_properties(tensorflow_cc PROPERTIES VERSION ${tensorflow_VERSION} SOVERSION ${tensorflow_VERSION_MAJOR})
+
+  install(TARGETS tensorflow_c tensorflow_cc LIBRARY DESTINATION lib)
+  install(DIRECTORY third_party/eigen3 DESTINATION include/tensorflow/third_party)
+endif()
+

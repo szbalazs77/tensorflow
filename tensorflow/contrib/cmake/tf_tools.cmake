@@ -23,4 +23,6 @@ add_dependencies(${proto_text}
 )
 if (tensorflow_ENABLE_GRPC_SUPPORT)
     add_dependencies(${proto_text} grpc)
-)
+endif()
+
+install(TARGETS ${proto_text} RUNTIME DESTINATION bin/tensorflow)

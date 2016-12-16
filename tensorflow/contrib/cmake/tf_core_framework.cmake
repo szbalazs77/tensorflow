@@ -8,7 +8,11 @@ function(RELATIVE_PROTOBUF_GENERATE_CPP SRCS HDRS ROOT_DIR)
     message(SEND_ERROR "Error: RELATIVE_PROTOBUF_GENERATE_CPP() called without any proto files")
     return()
   endif()
-  
+
+  if (tensorflow_BUILD_DEPENDENCIES)
+    set(_protoc_dep ${PROTOBUF_PROTOC_EXECUTABLE})
+  endif()
+
   set(${SRCS})
   set(${HDRS})
   foreach(FIL ${ARGN})
@@ -25,7 +29,7 @@ function(RELATIVE_PROTOBUF_GENERATE_CPP SRCS HDRS ROOT_DIR)
              "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb.h"
       COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
       ARGS --cpp_out  ${CMAKE_CURRENT_BINARY_DIR} -I ${ROOT_DIR} ${ABS_FIL} -I ${PROTOBUF_INCLUDE_DIRS}
-      DEPENDS ${ABS_FIL} ${PROTOBUF_PROTOC_EXECUTABLE}
+      DEPENDS ${ABS_FIL} ${_protoc_dep}
       COMMENT "Running C++ protocol buffer compiler on ${FIL}"
       VERBATIM )
   endforeach()
@@ -39,6 +43,10 @@ function(RELATIVE_PROTOBUF_TEXT_GENERATE_CPP SRCS HDRS ROOT_DIR)
   if(NOT ARGN)
       message(SEND_ERROR "Error: RELATIVE_PROTOBUF_TEXT_GENERATE_CPP() called without any proto files")
     return()
+  endif()
+
+  if (tensorflow_BUILD_PROTO_TEXT)
+    set(_proto_text_dep ${PROTO_TEXT_EXE})
   endif()
 
   set(${SRCS})
@@ -57,7 +65,7 @@ function(RELATIVE_PROTOBUF_TEXT_GENERATE_CPP SRCS HDRS ROOT_DIR)
              "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb_text.h"
       COMMAND ${PROTO_TEXT_EXE}
       ARGS "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}" ${REL_DIR} ${ABS_FIL} "${ROOT_DIR}/tensorflow/tools/proto_text/placeholder.txt"
-      DEPENDS ${ABS_FIL} ${PROTO_TEXT_EXE}
+      DEPENDS ${ABS_FIL} ${_proto_text_dep}
       COMMENT "Running C++ protocol buffer text compiler (${PROTO_TEXT_EXE}) on ${FIL}"
       VERBATIM )
     if (tensorflow_BUILD_LIBRARIES)
@@ -74,11 +82,11 @@ endfunction()
 # tf_protos_cc library
 ########################################################
 
-file(GLOB_RECURSE tf_protos_cc_srcs RELATIVE ${tensorflow_source_dir}
+file(GLOB_RECURSE tf_protos_cc_srcs RELATIVE ${tensorflow_SOURCE_DIR}
     "${tensorflow_SOURCE_DIR}/tensorflow/core/*.proto"
 )
 RELATIVE_PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS
-    ${tensorflow_source_dir} ${tf_protos_cc_srcs}
+    ${tensorflow_SOURCE_DIR} ${tf_protos_cc_srcs}
 )
 
 set(PROTO_TEXT_EXE "proto_text")
@@ -112,7 +120,7 @@ set(tf_proto_text_srcs
     "tensorflow/core/util/saved_tensor_slice.proto"
 )
 RELATIVE_PROTOBUF_TEXT_GENERATE_CPP(PROTO_TEXT_SRCS PROTO_TEXT_HDRS
-    ${tensorflow_source_dir} ${tf_proto_text_srcs}
+    ${tensorflow_SOURCE_DIR} ${tf_proto_text_srcs}
 )
 
 add_library(tf_protos_cc ${PROTO_SRCS} ${PROTO_HDRS})
@@ -121,10 +129,52 @@ add_library(tf_protos_cc ${PROTO_SRCS} ${PROTO_HDRS})
 # tf_core_lib library
 ########################################################
 file(GLOB_RECURSE tf_core_lib_srcs
-    "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/*.h"
-    "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/core/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/core/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/gtl/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/gtl/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/hash/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/hash/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/histogram/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/histogram/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/io/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/io/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/math/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/math/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/monitoring/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/monitoring/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/random/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/random/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/strings/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/strings/*.cc"
+    "${tensorflow_source_dir}/tensorflow/core/lib/wav/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/wav/*.cc"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/public/*.h"
 )
+
+if(tensorflow_ENABLE_GIF)
+    file(GLOB tf_core_lib_gif_srcs
+        "${tensorflow_source_dir}/tensorflow/core/lib/gif/*.h"
+        "${tensorflow_source_dir}/tensorflow/core/lib/gif/*.cc"
+    )
+    list(APPEND tf_core_lib_srcs ${tf_core_lib_gif_srcs})
+endif()
+
+if(tensorflow_ENABLE_JPEG)
+    file(GLOB tf_core_lib_jpeg_srcs
+        "${tensorflow_source_dir}/tensorflow/core/lib/jpeg/*.h"
+        "${tensorflow_source_dir}/tensorflow/core/lib/jpeg/*.cc"
+    )
+    list(APPEND tf_core_lib_srcs ${tf_core_lib_jpeg_srcs})
+endif()
+
+if(tensorflow_ENABLE_PNG)
+    file(GLOB tf_core_lib_png_srcs
+        "${tensorflow_source_dir}/tensorflow/core/lib/png/*.h"
+        "${tensorflow_source_dir}/tensorflow/core/lib/png/*.cc"
+    )
+    list(APPEND tf_core_lib_srcs ${tf_core_lib_png_srcs})
+endif()
 
 file(GLOB tf_core_platform_srcs
     "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/*.h"
@@ -176,16 +226,22 @@ add_dependencies(tf_core_lib ${tensorflow_EXTERNAL_DEPENDENCIES} tf_protos_cc)
 # force_rebuild always runs forcing ${VERSION_INFO_CC} target to run
 # ${VERSION_INFO_CC} would cache, but it depends on a phony never produced
 # target.
-set(VERSION_INFO_CC ${tensorflow_SOURCE_DIR}/tensorflow/core/util/version_info.cc)
-add_custom_target(force_rebuild_target ALL DEPENDS ${VERSION_INFO_CC})
-add_custom_command(OUTPUT __force_rebuild COMMAND cmake -E echo)
-add_custom_command(OUTPUT
-    ${VERSION_INFO_CC}
-    COMMAND ${PYTHON_EXECUTABLE} ${tensorflow_SOURCE_DIR}/tensorflow/tools/git/gen_git_source.py
-    --raw_generate ${VERSION_INFO_CC}
-    DEPENDS __force_rebuild)
-
-set(tf_version_srcs ${tensorflow_SOURCE_DIR}/tensorflow/core/util/version_info.cc)
+set(_verinfo_dir "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/core/util")
+set(VERSION_INFO_CC "${_verinfo_dir}/version_info.cc")
+function(WriteVersionInfoCC)
+    file(MAKE_DIRECTORY "${_verinfo_dir}")
+    file(WRITE ${VERSION_INFO_CC} "const char* tf_git_version() {return \"${tensorflow_VERSION_STRING}\";}")
+    file(APPEND ${VERSION_INFO_CC} "const char* tf_compiler_version() {return __VERSION__;}")
+endfunction()
+if (EXISTS ${VERSION_INFO_CC})
+    file(STRINGS ${VERSION_INFO_CC} _verline REGEX "tf_git_version")
+    string(REGEX REPLACE "^.*\"(.*)\";}" "\\1" _old_ver ${_verline})
+    if (NOT "${_old_ver}" STREQUAL "${tensorflow_VERSION_STRING}")
+        WriteVersionInfoCC()
+    endif()
+else()
+    WriteVersionInfoCC()
+endif()
 
 ########################################################
 # tf_core_framework library
@@ -195,6 +251,7 @@ file(GLOB_RECURSE tf_core_framework_srcs
     "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/*.cc"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/util/*.h"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/util/*.cc"
+    "${CMAKE_CURRENT_BINARY_DIR}/tensorflow/core/util/version_info.cc"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/session.cc"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/session_factory.cc"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/session_options.cc"
@@ -220,10 +277,11 @@ list(REMOVE_ITEM tf_core_framework_srcs ${tf_core_framework_test_srcs}
 
 add_library(tf_core_framework OBJECT
     ${tf_core_framework_srcs}
-    ${tf_version_srcs}
     ${PROTO_TEXT_HDRS}
     ${PROTO_TEXT_SRCS})
 add_dependencies(tf_core_framework
     tf_core_lib
     proto_text
 )
+
+InstallTFHeaders(tf_core_framework_srcs ${tensorflow_SOURCE_DIR} include)

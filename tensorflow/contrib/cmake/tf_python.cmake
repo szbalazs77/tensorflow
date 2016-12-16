@@ -108,26 +108,26 @@ function(RELATIVE_PROTOBUF_GENERATE_CPP SRCS HDRS ROOT_DIR)
   set(${HDRS} ${${HDRS}} PARENT_SCOPE)
 endfunction()
 
-file(GLOB_RECURSE tf_protos_python_srcs RELATIVE ${tensorflow_source_dir}
-    "${tensorflow_source_dir}/tensorflow/core/*.proto"
-    "${tensorflow_source_dir}/tensorflow/python/*.proto"
-    "${tensorflow_source_dir}/tensorflow/contrib/session_bundle/*.proto"
-    "${tensorflow_source_dir}/tensorflow/contrib/tensorboard/*.proto"
+file(GLOB_RECURSE tf_protos_python_srcs RELATIVE ${tensorflow_SOURCE_DIR}
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/*.proto"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/*.proto"
+    "${tensorflow_SOURCE_DIR}/tensorflow/contrib/session_bundle/*.proto"
+    "${tensorflow_SOURCE_DIR}/tensorflow/contrib/tensorboard/*.proto"
 )
 RELATIVE_PROTOBUF_GENERATE_PYTHON(
-    ${tensorflow_source_dir} PYTHON_PROTO_GENFILES ${tf_protos_python_srcs}
+    ${tensorflow_SOURCE_DIR} PYTHON_PROTO_GENFILES ${tf_protos_python_srcs}
 )
 
 # NOTE(mrry): Avoid regenerating the tensorflow/core protos because this
 # can cause benign-but-failing-on-Windows-due-to-file-locking conflicts
 # when two rules attempt to generate the same file.
-file(GLOB_RECURSE tf_python_protos_cc_srcs RELATIVE ${tensorflow_source_dir}
-    "${tensorflow_source_dir}/tensorflow/python/*.proto"
-    "${tensorflow_source_dir}/tensorflow/contrib/session_bundle/*.proto"
-    "${tensorflow_source_dir}/tensorflow/contrib/tensorboard/*.proto"
+file(GLOB_RECURSE tf_python_protos_cc_srcs RELATIVE ${tensorflow_SOURCE_DIR}
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/*.proto"
+    "${tensorflow_SOURCE_DIR}/tensorflow/contrib/session_bundle/*.proto"
+    "${tensorflow_SOURCE_DIR}/tensorflow/contrib/tensorboard/*.proto"
 )
 RELATIVE_PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS
-    ${tensorflow_source_dir} ${tf_python_protos_cc_srcs}
+    ${tensorflow_SOURCE_DIR} ${tf_python_protos_cc_srcs}
 )
 
 add_library(tf_python_protos_cc ${PROTO_SRCS} ${PROTO_HDRS})
@@ -152,14 +152,14 @@ function(add_python_module MODULE_NAME)
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/tf_python/${MODULE_NAME}")
     add_custom_command(TARGET tf_python_touchup_modules PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/tf_python/${MODULE_NAME}/__init__.py")
-    file(GLOB module_python_srcs RELATIVE ${tensorflow_source_dir}
-        "${tensorflow_source_dir}/${MODULE_NAME}/*.py"
+    file(GLOB module_python_srcs RELATIVE ${tensorflow_SOURCE_DIR}
+        "${tensorflow_SOURCE_DIR}/${MODULE_NAME}/*.py"
     )
     if(NOT ${ADD_PYTHON_MODULE_DONTCOPY})
         foreach(script ${module_python_srcs})
             get_filename_component(REL_DIR ${script} DIRECTORY)
             add_custom_command(TARGET tf_python_copy_scripts_to_destination PRE_BUILD
-              COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/${script} ${CMAKE_CURRENT_BINARY_DIR}/tf_python/${script})
+              COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/${script} ${CMAKE_CURRENT_BINARY_DIR}/tf_python/${script})
         endforeach()
     endif()
 endfunction()
@@ -407,9 +407,9 @@ add_custom_command(TARGET tf_python_touchup_modules PRE_BUILD
 # tf_python_op_gen_main library
 ########################################################
 set(tf_python_op_gen_main_srcs
-    "${tensorflow_source_dir}/tensorflow/python/framework/python_op_gen.cc"
-    "${tensorflow_source_dir}/tensorflow/python/framework/python_op_gen_main.cc"
-    "${tensorflow_source_dir}/tensorflow/python/framework/python_op_gen.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/framework/python_op_gen.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/framework/python_op_gen_main.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/framework/python_op_gen.h"
 )
 
 add_library(tf_python_op_gen_main OBJECT ${tf_python_op_gen_main_srcs})
@@ -463,7 +463,7 @@ function(GENERATE_PYTHON_OP_LIB tf_python_op_lib_name)
     # containing the wrappers.
     add_custom_command(
       OUTPUT ${GENERATE_PYTHON_OP_LIB_DESTINATION}
-      COMMAND ${tf_python_op_lib_name}_gen_python @${tensorflow_source_dir}/tensorflow/python/ops/hidden_ops.txt ${require_shape_fn} > ${GENERATE_PYTHON_OP_LIB_DESTINATION}
+      COMMAND ${tf_python_op_lib_name}_gen_python @${tensorflow_SOURCE_DIR}/tensorflow/python/ops/hidden_ops.txt ${require_shape_fn} > ${GENERATE_PYTHON_OP_LIB_DESTINATION}
       DEPENDS ${tf_python_op_lib_name}_gen_python
     )
 
@@ -526,16 +526,16 @@ find_package(SWIG REQUIRED)
 add_custom_command(
       OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/python/pywrap_tensorflow.py"
              "${CMAKE_CURRENT_BINARY_DIR}/pywrap_tensorflow.cc"
-      DEPENDS tf_python_touchup_modules __force_rebuild
+      DEPENDS tf_python_touchup_modules
       COMMAND ${SWIG_EXECUTABLE}
       ARGS -python -c++
-           -I${tensorflow_source_dir}
+           -I${tensorflow_SOURCE_DIR}
            -I${CMAKE_CURRENT_BINARY_DIR}
            -module pywrap_tensorflow
            -outdir ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/python
            -o ${CMAKE_CURRENT_BINARY_DIR}/pywrap_tensorflow.cc
            -globals ''
-           ${tensorflow_source_dir}/tensorflow/python/tensorflow.i
+           ${tensorflow_SOURCE_DIR}/tensorflow/python/tensorflow.i
       COMMENT "Running SWIG to generate Python wrappers"
       VERBATIM )
 
@@ -545,28 +545,28 @@ add_custom_command(
 # TODO(mrry): Refactor this to expose a framework library that
 # facilitates `tf.load_op_library()`.
 add_library(pywrap_tensorflow SHARED
-    "${tensorflow_source_dir}/tensorflow/python/client/tf_session_helper.h"
-    "${tensorflow_source_dir}/tensorflow/python/client/tf_session_helper.cc"
-    "${tensorflow_source_dir}/tensorflow/python/framework/cpp_shape_inference.h"
-    "${tensorflow_source_dir}/tensorflow/python/framework/cpp_shape_inference.cc"
-    "${tensorflow_source_dir}/tensorflow/python/framework/python_op_gen.h"
-    "${tensorflow_source_dir}/tensorflow/python/framework/python_op_gen.cc"
-    "${tensorflow_source_dir}/tensorflow/python/lib/core/numpy.h"
-    "${tensorflow_source_dir}/tensorflow/python/lib/core/numpy.cc"
-    "${tensorflow_source_dir}/tensorflow/python/lib/core/py_func.h"
-    "${tensorflow_source_dir}/tensorflow/python/lib/core/py_func.cc"
-    "${tensorflow_source_dir}/tensorflow/python/lib/io/py_record_reader.h"
-    "${tensorflow_source_dir}/tensorflow/python/lib/io/py_record_reader.cc"
-    "${tensorflow_source_dir}/tensorflow/python/lib/io/py_record_writer.h"
-    "${tensorflow_source_dir}/tensorflow/python/lib/io/py_record_writer.cc"
-    "${tensorflow_source_dir}/tensorflow/python/util/kernel_registry.h"
-    "${tensorflow_source_dir}/tensorflow/python/util/kernel_registry.cc"
-    "${tensorflow_source_dir}/tensorflow/c/c_api.cc"
-    "${tensorflow_source_dir}/tensorflow/c/c_api.h"
-    "${tensorflow_source_dir}/tensorflow/c/checkpoint_reader.cc"
-    "${tensorflow_source_dir}/tensorflow/c/checkpoint_reader.h"
-    "${tensorflow_source_dir}/tensorflow/c/tf_status_helper.cc"
-    "${tensorflow_source_dir}/tensorflow/c/tf_status_helper.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/client/tf_session_helper.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/client/tf_session_helper.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/framework/cpp_shape_inference.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/framework/cpp_shape_inference.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/framework/python_op_gen.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/framework/python_op_gen.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/lib/core/numpy.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/lib/core/numpy.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/lib/core/py_func.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/lib/core/py_func.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/lib/io/py_record_reader.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/lib/io/py_record_reader.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/lib/io/py_record_writer.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/lib/io/py_record_writer.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/util/kernel_registry.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/python/util/kernel_registry.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/checkpoint_reader.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/checkpoint_reader.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/tf_status_helper.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/tf_status_helper.h"
     "${CMAKE_CURRENT_BINARY_DIR}/pywrap_tensorflow.cc"
     $<TARGET_OBJECTS:tf_core_lib>
     $<TARGET_OBJECTS:tf_core_cpu>
@@ -600,7 +600,7 @@ add_dependencies(tf_python_build_pip_package
     tf_python_touchup_modules
     tf_python_ops)
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/tensorflow/tools/pip_package/setup.py
+  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/tensorflow/tools/pip_package/setup.py
                                    ${CMAKE_CURRENT_BINARY_DIR}/tf_python/)
 if(WIN32)
   add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
@@ -612,27 +612,27 @@ else()
                                      ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/python/_pywrap_tensorflow.so)
 endif()
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/tensorflow/tools/pip_package/README
+  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/tensorflow/tools/pip_package/README
                                    ${CMAKE_CURRENT_BINARY_DIR}/tf_python/)
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/tensorflow/tools/pip_package/MANIFEST.in
+  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/tensorflow/tools/pip_package/MANIFEST.in
                                    ${CMAKE_CURRENT_BINARY_DIR}/tf_python/)
 
 # Copy resources for TensorBoard.
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/tensorflow/tensorboard/dist/bazel-html-imports.html
+  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/tensorflow/tensorboard/dist/bazel-html-imports.html
                                    ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/tensorboard/dist/)
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/tensorflow/tensorboard/dist/index.html
+  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/tensorflow/tensorboard/dist/index.html
                                    ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/tensorboard/dist/)
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/tensorflow/tensorboard/dist/tf-tensorboard.html
+  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/tensorflow/tensorboard/dist/tf-tensorboard.html
                                    ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/tensorboard/dist/)
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/tensorflow/tensorboard/lib/css/global.css
+  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/tensorflow/tensorboard/lib/css/global.css
                                    ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/tensorboard/lib/css/)
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_source_dir}/tensorflow/tensorboard/TAG
+  COMMAND ${CMAKE_COMMAND} -E copy ${tensorflow_SOURCE_DIR}/tensorflow/tensorboard/TAG
                                    ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/tensorboard/)
 add_custom_command(TARGET tf_python_build_pip_package POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/tensorboard_external

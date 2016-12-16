@@ -39,24 +39,24 @@
 # tf_stream_executor library
 ########################################################
 file(GLOB tf_stream_executor_srcs
-    "${tensorflow_source_dir}/tensorflow/stream_executor/*.cc"
-    "${tensorflow_source_dir}/tensorflow/stream_executor/*.h"
-    "${tensorflow_source_dir}/tensorflow/stream_executor/lib/*.cc"
-    "${tensorflow_source_dir}/tensorflow/stream_executor/lib/*.h"
-    "${tensorflow_source_dir}/tensorflow/stream_executor/platform/*.h"
-    "${tensorflow_source_dir}/tensorflow/stream_executor/platform/default/*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/stream_executor/*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/stream_executor/*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/stream_executor/lib/*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/stream_executor/lib/*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/stream_executor/platform/*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/stream_executor/platform/default/*.h"
 )
 
 if (tensorflow_ENABLE_GPU)    
     file(GLOB tf_stream_executor_gpu_srcs
-        "${tensorflow_source_dir}/tensorflow/stream_executor/cuda/*.cc"
+        "${tensorflow_SOURCE_DIR}/tensorflow/stream_executor/cuda/*.cc"
     )
     list(APPEND tf_stream_executor_srcs ${tf_stream_executor_gpu_srcs})
 endif()    
 
 #file(GLOB_RECURSE tf_stream_executor_test_srcs
-#    "${tensorflow_source_dir}/tensorflow/stream_executor/*_test.cc"
-#    "${tensorflow_source_dir}/tensorflow/stream_executor/*_test.h"
+#    "${tensorflow_SOURCE_DIR}/tensorflow/stream_executor/*_test.cc"
+#    "${tensorflow_SOURCE_DIR}/tensorflow/stream_executor/*_test.h"
 #)
 #list(REMOVE_ITEM tf_stream_executor_srcs ${tf_stream_executor_test_srcs}) 
 
