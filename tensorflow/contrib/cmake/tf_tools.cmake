@@ -1,4 +1,4 @@
-set(tf_tools_proto_text_src_dir "${tensorflow_source_dir}/tensorflow/tools/proto_text")
+set(tf_tools_proto_text_src_dir "${tensorflow_SOURCE_DIR}/tensorflow/tools/proto_text")
 
 file(GLOB tf_tools_srcs
     "${tf_tools_proto_text_src_dir}/gen_proto_text_functions.cc"
@@ -20,5 +20,7 @@ target_link_libraries(${proto_text} PUBLIC
 
 add_dependencies(${proto_text}
     tf_core_lib
-    grpc
+)
+if (tensorflow_ENABLE_GRPC_SUPPORT)
+    add_dependencies(${proto_text} grpc)
 )
