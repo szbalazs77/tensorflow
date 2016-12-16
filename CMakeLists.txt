@@ -281,21 +281,16 @@ if (tensorflow_ENABLE_GPU)
     list(APPEND tensorflow_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES})
   else()
     find_package(CUDA 8.0 REQUIRED)
-    find_package(CUDNN REQUIRED)
+    find_library(CUDNN_LIBRARY NAMES cudnn libcudnn cudnn_static_v5 libcudnn_static_v5)
 
     # by default we assume compute cabability 5.3. If you change this change it in
     # cuda_config.h below
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--include-path ${PROJECT_BINARY_DIR}/$\{build_configuration\};--expt-relaxed-constexpr)
-    set(CUDA_INCLUDE ${CUDA_TOOLKIT_TARGET_DIR} ${CUDA_TOOLKIT_TARGET_DIR}/extras/CUPTI/include)
-    include_directories(${CUDA_INCLUDE})
+    include_directories(${CUDA_TOOLKIT_INCLUDE} ${CUDA_TOOLKIT_TARGET_DIR}/extras/CUPTI/include)
     add_definitions(-DGOOGLE_CUDA=1 -DTF_EXTRA_CUDA_CAPABILITIES=5.3)
 
-    # add cudnn
-    include_directories(${CUDNN_HOME})
-    set(CUDA_LIBRARIES ${CUDA_LIBRARIES} ${CUDNN_HOME}/lib/x64/cudnn.lib)
-
     # create cuda_config.h
-    FILE(WRITE ${tensorflow_source_dir}/third_party/gpus/cuda/cuda_config.h
+    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/cuda_config.h
       "#ifndef CUDA_CUDA_CONFIG_H_\n"
       "#define CUDA_CUDA_CONFIG_H_\n"
       "#define TF_CUDA_CAPABILITIES CudaVersion(\"5.3\")\n"
@@ -304,18 +299,31 @@ if (tensorflow_ENABLE_GPU)
       "#endif  // CUDA_CUDA_CONFIG_H_\n"
     )
 
-    # tf assumes in various places header files to be in cuda/include. On windows the cuda sdk
-    # installs them under cuda/version/include and to avoid that we need to change tf we copy a
-    # few files to cuda/include
-    FILE(COPY
-      ${CUDA_TOOLKIT_TARGET_DIR}/include/cuda.h ${CUDA_TOOLKIT_TARGET_DIR}/include/cuComplex.h
-      ${CUDA_TOOLKIT_TARGET_DIR}/include/cublas_v2.h ${CUDNN_HOME}/include/cudnn.h
-      ${CUDA_TOOLKIT_TARGET_DIR}/include/cufft.h ${CUDA_TOOLKIT_TARGET_DIR}/include/curand.h
-      DESTINATION ${tensorflow_source_dir}/third_party/gpus/cuda/include
+    # tf uses 'cudnn.h', but the actual header is versioned
+    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cudnn.h
+      "#include <cudnn_v5.h>"
     )
-    include_directories(${tensorflow_source_dir}/third_party/gpus)
+    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cuda.h
+      "#include <cuda.h>"
+    )
+    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cublas_v2.h
+      "#include <cublas_v2.h>"
+    )
+    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cuComplex.h
+      "#include <cuComplex.h>"
+    )
+    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cufft.h
+      "#include <cufft.h>"
+    )
+    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/curand.h
+      "#include <curand.h>"
+    )
+    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/extras/CUPTI/include/cupti.h
+      "#include <cupti.h>"
+    )
+    include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus)
     # add cuda libraries to tensorflow_EXTERNAL_LIBRARIES
-    list(APPEND tensorflow_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES})
+    list(APPEND tensorflow_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES} ${CUDNN_LIBRARY})
   endif()
 endif()
 
@@ -371,5 +379,9 @@ if (tensorflow_BUILD_LIBRARIES)
 
   install(TARGETS tensorflow_c tensorflow_cc LIBRARY DESTINATION lib)
   install(DIRECTORY third_party/eigen3 DESTINATION include/tensorflow/third_party)
+
+  configure_file(${tensorflow_SOURCE_DIR}/tensorflow.pc.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/tensorflow.pc @ONLY)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tensorflow.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 endif()
 

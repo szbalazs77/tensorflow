@@ -1,0 +1,11 @@
+Name: tensorflow
+Version: @tensorflow_VERSION@
+Description: Library for numerical computation using data flow graphs
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=@CMAKE_INSTALL_PREFIX@
+libdir=@CMAKE_INSTALL_LIBDIR@
+includedir=@CMAKE_INSTALL_INCLUDEDIR@
+
+Cflags: -I${includedir}/tensorflow
+Libs: -L${libdir} -ltensorflow_cc
+Libs.private: -lstdc++ -lpthread -lm
