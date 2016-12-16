@@ -60,6 +60,9 @@ function(RELATIVE_PROTOBUF_TEXT_GENERATE_CPP SRCS HDRS ROOT_DIR)
       DEPENDS ${ABS_FIL} ${PROTO_TEXT_EXE}
       COMMENT "Running C++ protocol buffer text compiler (${PROTO_TEXT_EXE}) on ${FIL}"
       VERBATIM )
+    if (tensorflow_BUILD_LIBRARIES)
+      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb_text.h" DESTINATION "include/${REL_DIR}")
+    endif()
   endforeach()
 
   set_source_files_properties(${${SRCS}} ${${HDRS}} PROPERTIES GENERATED TRUE)
@@ -72,7 +75,7 @@ endfunction()
 ########################################################
 
 file(GLOB_RECURSE tf_protos_cc_srcs RELATIVE ${tensorflow_source_dir}
-    "${tensorflow_source_dir}/tensorflow/core/*.proto"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/*.proto"
 )
 RELATIVE_PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS
     ${tensorflow_source_dir} ${tf_protos_cc_srcs}
@@ -118,32 +121,32 @@ add_library(tf_protos_cc ${PROTO_SRCS} ${PROTO_HDRS})
 # tf_core_lib library
 ########################################################
 file(GLOB_RECURSE tf_core_lib_srcs
-    "${tensorflow_source_dir}/tensorflow/core/lib/*.h"
-    "${tensorflow_source_dir}/tensorflow/core/lib/*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/public/*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/public/*.h"
 )
 
 file(GLOB tf_core_platform_srcs
-    "${tensorflow_source_dir}/tensorflow/core/platform/*.h"
-    "${tensorflow_source_dir}/tensorflow/core/platform/*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/platform/default/*.h"
-    "${tensorflow_source_dir}/tensorflow/core/platform/default/*.cc")
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/default/*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/default/*.cc")
 list(APPEND tf_core_lib_srcs ${tf_core_platform_srcs})
 
 if(UNIX)
   file(GLOB tf_core_platform_posix_srcs
-      "${tensorflow_source_dir}/tensorflow/core/platform/posix/*.h"
-      "${tensorflow_source_dir}/tensorflow/core/platform/posix/*.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/posix/*.h"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/posix/*.cc"
   )
   list(APPEND tf_core_lib_srcs ${tf_core_platform_posix_srcs})
 endif(UNIX)
 
 if(WIN32)
   file(GLOB tf_core_platform_windows_srcs
-      "${tensorflow_source_dir}/tensorflow/core/platform/windows/*.h"
-      "${tensorflow_source_dir}/tensorflow/core/platform/windows/*.cc"
-      "${tensorflow_source_dir}/tensorflow/core/platform/posix/error.h"
-      "${tensorflow_source_dir}/tensorflow/core/platform/posix/error.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/windows/*.h"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/windows/*.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/posix/error.h"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/posix/error.cc"
   )
   list(APPEND tf_core_lib_srcs ${tf_core_platform_windows_srcs})
 endif(WIN32)
@@ -151,18 +154,18 @@ endif(WIN32)
 if(tensorflow_ENABLE_SSL_SUPPORT)
   # Cloud libraries require boringssl.
   file(GLOB tf_core_platform_cloud_srcs
-      "${tensorflow_source_dir}/tensorflow/core/platform/cloud/*.h"
-      "${tensorflow_source_dir}/tensorflow/core/platform/cloud/*.cc"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/cloud/*.h"
+      "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/cloud/*.cc"
   )
   list(APPEND tf_core_lib_srcs ${tf_core_platform_cloud_srcs})
 endif()
 
 file(GLOB_RECURSE tf_core_lib_test_srcs
-    "${tensorflow_source_dir}/tensorflow/core/lib/*test*.h"
-    "${tensorflow_source_dir}/tensorflow/core/lib/*test*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/platform/*test*.h"
-    "${tensorflow_source_dir}/tensorflow/core/platform/*test*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/public/*test*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/*test*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/lib/*test*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/*test*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/platform/*test*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/public/*test*.h"
 )
 list(REMOVE_ITEM tf_core_lib_srcs ${tf_core_lib_test_srcs})
 
@@ -173,46 +176,46 @@ add_dependencies(tf_core_lib ${tensorflow_EXTERNAL_DEPENDENCIES} tf_protos_cc)
 # force_rebuild always runs forcing ${VERSION_INFO_CC} target to run
 # ${VERSION_INFO_CC} would cache, but it depends on a phony never produced
 # target.
-set(VERSION_INFO_CC ${tensorflow_source_dir}/tensorflow/core/util/version_info.cc)
+set(VERSION_INFO_CC ${tensorflow_SOURCE_DIR}/tensorflow/core/util/version_info.cc)
 add_custom_target(force_rebuild_target ALL DEPENDS ${VERSION_INFO_CC})
 add_custom_command(OUTPUT __force_rebuild COMMAND cmake -E echo)
 add_custom_command(OUTPUT
     ${VERSION_INFO_CC}
-    COMMAND ${PYTHON_EXECUTABLE} ${tensorflow_source_dir}/tensorflow/tools/git/gen_git_source.py
+    COMMAND ${PYTHON_EXECUTABLE} ${tensorflow_SOURCE_DIR}/tensorflow/tools/git/gen_git_source.py
     --raw_generate ${VERSION_INFO_CC}
     DEPENDS __force_rebuild)
 
-set(tf_version_srcs ${tensorflow_source_dir}/tensorflow/core/util/version_info.cc)
+set(tf_version_srcs ${tensorflow_SOURCE_DIR}/tensorflow/core/util/version_info.cc)
 
 ########################################################
 # tf_core_framework library
 ########################################################
 file(GLOB_RECURSE tf_core_framework_srcs
-    "${tensorflow_source_dir}/tensorflow/core/framework/*.h"
-    "${tensorflow_source_dir}/tensorflow/core/framework/*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/util/*.h"
-    "${tensorflow_source_dir}/tensorflow/core/util/*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/common_runtime/session.cc"
-    "${tensorflow_source_dir}/tensorflow/core/common_runtime/session_factory.cc"
-    "${tensorflow_source_dir}/tensorflow/core/common_runtime/session_options.cc"
-    "${tensorflow_source_dir}/public/*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/util/*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/util/*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/session.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/session_factory.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/common_runtime/session_options.cc"
+    "${tensorflow_SOURCE_DIR}/public/*.h"
 )
 
 file(GLOB_RECURSE tf_core_framework_test_srcs
-    "${tensorflow_source_dir}/tensorflow/core/framework/*test*.h"
-    "${tensorflow_source_dir}/tensorflow/core/framework/*test*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/framework/*testutil.h"
-    "${tensorflow_source_dir}/tensorflow/core/framework/*testutil.cc"
-    "${tensorflow_source_dir}/tensorflow/core/framework/*main.cc"
-    "${tensorflow_source_dir}/tensorflow/core/util/*test*.h"
-    "${tensorflow_source_dir}/tensorflow/core/util/*test*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/util/*main.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/*test*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/*test*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/*testutil.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/*testutil.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/framework/*main.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/util/*test*.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/util/*test*.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/util/*main.cc"
 )
 
 list(REMOVE_ITEM tf_core_framework_srcs ${tf_core_framework_test_srcs}
-    "${tensorflow_source_dir}/tensorflow/core/util/memmapped_file_system.cc"
-    "${tensorflow_source_dir}/tensorflow/core/util/memmapped_file_system.h"
-    "${tensorflow_source_dir}/tensorflow/core/util/memmapped_file_system_writer.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/util/memmapped_file_system.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/util/memmapped_file_system.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/util/memmapped_file_system_writer.cc"
 )
 
 add_library(tf_core_framework OBJECT
