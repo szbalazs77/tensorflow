@@ -7,5 +7,5 @@ libdir=@CMAKE_INSTALL_LIBDIR@
 includedir=@CMAKE_INSTALL_INCLUDEDIR@
 
 Cflags: -I${includedir}/tensorflow
-Libs: -L${libdir} -ltensorflow_cc
+Libs: -L${libdir} @tensorflow_LIB_REFS@
 Libs.private: -lpng12 -ljpeg -lstdc++ -lpthread -ldl -lm
