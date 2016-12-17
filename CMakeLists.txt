@@ -143,7 +143,7 @@ if (tensorflow_BUILD_DEPENDENCIES)
 
   include_directories(
     # Source and generated code.
-    ${tensorflow_source_dir}
+    ${tensorflow_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     # External dependencies.
     ${zlib_INCLUDE_DIR}
@@ -258,7 +258,7 @@ if (tensorflow_ENABLE_GPU)
     set(CUDA_LIBRARIES ${CUDA_LIBRARIES} ${CUDNN_HOME}/lib/x64/cudnn.lib)
 
     # create cuda_config.h
-    FILE(WRITE ${tensorflow_source_dir}/third_party/gpus/cuda/cuda_config.h
+    FILE(WRITE ${tensorflow_SOURCE_DIR}/third_party/gpus/cuda/cuda_config.h
       "#ifndef CUDA_CUDA_CONFIG_H_\n"
       "#define CUDA_CUDA_CONFIG_H_\n"
       "#define TF_CUDA_CAPABILITIES CudaVersion(\"3.0\"),CudaVersion(\"3.5\"),CudaVersion(\"5.2\")\n"
@@ -274,9 +274,9 @@ if (tensorflow_ENABLE_GPU)
       ${CUDA_TOOLKIT_TARGET_DIR}/include/cuda.h ${CUDA_TOOLKIT_TARGET_DIR}/include/cuComplex.h
       ${CUDA_TOOLKIT_TARGET_DIR}/include/cublas_v2.h ${CUDNN_HOME}/include/cudnn.h
       ${CUDA_TOOLKIT_TARGET_DIR}/include/cufft.h ${CUDA_TOOLKIT_TARGET_DIR}/include/curand.h
-      DESTINATION ${tensorflow_source_dir}/third_party/gpus/cuda/include
+      DESTINATION ${tensorflow_SOURCE_DIR}/third_party/gpus/cuda/include
     )
-    include_directories(${tensorflow_source_dir}/third_party/gpus)
+    include_directories(${tensorflow_SOURCE_DIR}/third_party/gpus)
     # add cuda libraries to tensorflow_EXTERNAL_LIBRARIES
     list(APPEND tensorflow_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES})
   else()
@@ -364,16 +364,18 @@ if (tensorflow_BUILD_LIBRARIES)
     $<TARGET_OBJECTS:tf_core_cpu>
     $<TARGET_OBJECTS:tf_core_framework>
     $<TARGET_OBJECTS:tf_core_lib>
-    "${tensorflow_source_dir}/tensorflow/c/c_api.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.cc"
   )
   set_target_properties(tensorflow_c PROPERTIES VERSION ${tensorflow_VERSION} SOVERSION ${tensorflow_VERSION_MAJOR})
+  set(tensorflow_c_hdrs "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.h")
+  InstallTFHeaders(tensorflow_c_hdrs ${tensorflow_SOURCE_DIR} include)
 
   add_library(tensorflow_cc SHARED
     $<TARGET_OBJECTS:tf_core_cpu>
     $<TARGET_OBJECTS:tf_core_framework>
     $<TARGET_OBJECTS:tf_core_lib>
     $<TARGET_OBJECTS:tf_cc_ops>
-    "${tensorflow_source_dir}/tensorflow/c/c_api.cc"
+    "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.cc"
   )
   set_target_properties(tensorflow_cc PROPERTIES VERSION ${tensorflow_VERSION} SOVERSION ${tensorflow_VERSION_MAJOR})
 
