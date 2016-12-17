@@ -123,7 +123,8 @@ RELATIVE_PROTOBUF_TEXT_GENERATE_CPP(PROTO_TEXT_SRCS PROTO_TEXT_HDRS
     ${tensorflow_SOURCE_DIR} ${tf_proto_text_srcs}
 )
 
-add_library(tf_protos_cc ${PROTO_SRCS} ${PROTO_HDRS})
+add_library(tf_protos_cc_objs OBJECT ${PROTO_SRCS} ${PROTO_HDRS})
+add_library(tf_protos_cc STATIC $<TARGET_OBJECTS:tf_protos_cc_objs>)
 
 ########################################################
 # tf_core_lib library

@@ -21,10 +21,12 @@ endif()
 # Set C++14 as standard for the whole project
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(CMAKE_CXX_STANDARD 11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -Wno-narrowing")
+    set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
 else()
     set(CMAKE_CXX_STANDARD 14)
 endif()
+
 
 list(INSERT CMAKE_MODULE_PATH 0 "${tensorflow_SOURCE_DIR}/tensorflow/contrib/cmake")
 
@@ -49,6 +51,19 @@ option(tensorflow_ENABLE_GIF "Enable GIF support" OFF)
 option(tensorflow_ENABLE_JPEG "Enable JPEG support" OFF)
 option(tensorflow_ENABLE_PNG "Enable PNG support" OFF)
 option(tensorflow_BUILD_LIBRARIES "Build and install libraries and headers" ON)
+option(tensorflow_ENABLE_SLIM_BUILD "Exclude zlib compression" OFF)
+option(tensorflow_ENABLE_TYPES_SLIM "Reduce number of supported types" OFF)
+option(tensorflow_ENABLE_SELECTIVE_REGISTRATION "Enable selective registration of ops" OFF)
+
+if (tensorflow_ENABLE_SLIM_BUILD)
+  if (NOT tensorflow_ENABLE_PNG)
+    set(_tensorflow_need_zlib OFF)
+  else()
+    set(_tensorflow_need_zlib ON)
+  endif()
+else()
+  set(_tensorflow_need_zlib ON)
+endif()
 
 if (NOT WIN32)
   # Threads: defines CMAKE_THREAD_LIBS_INIT and adds -pthread compile option
@@ -104,10 +119,18 @@ endif()
 
 # External dependencies
 if (tensorflow_BUILD_DEPENDENCIES)
-  include(zlib)
-  include(gif)
-  include(png)
-  include(jpeg)
+  if(_tensorflow_need_zlib)
+    include(zlib)
+  endif()
+  if(tensorflow_ENABLE_GIF)
+    include(gif)
+  endif()
+  if(tensorflow_ENABLE_PNG)
+    include(png)
+  endif()
+  if(tensorflow_ENABLE_JPEG)
+    include(jpeg)
+  endif()
   include(eigen)
   include(gemmlowp)
   include(jsoncpp)
@@ -129,17 +152,25 @@ if (tensorflow_BUILD_DEPENDENCIES)
     ${protobuf_STATIC_LIBRARIES}
   )
   set(tensorflow_EXTERNAL_DEPENDENCIES
-    zlib_copy_headers_to_destination
-    gif_copy_headers_to_destination
-    png_copy_headers_to_destination
-    jpeg_copy_headers_to_destination
     jsoncpp
     farmhash_copy_headers_to_destination
     highwayhash_copy_headers_to_destination
     protobuf
     eigen
     gemmlowp
-  )
+    )
+  if(_tensorflow_need_zlib)
+    list(APPEND tensorflow_EXTERNAL_DEPENDENCIES zlib_copy_headers_to_destination)
+  endif()
+  if(tensorflow_ENABLE_GIF)
+    list(APPEND tensorflow_EXTERNAL_DEPENDENCIES gif_copy_headers_to_destination)
+  endif()
+  if(tensorflow_ENABLE_PNG)
+    list(APPEND tensorflow_EXTERNAL_DEPENDENCIES png_copy_headers_to_destination)
+  endif()
+  if(tensorflow_ENABLE_JPEG)
+    list(APPEND tensorflow_EXTERNAL_DEPENDENCIES jpeg_copy_headers_to_destination)
+  endif()
 
   include_directories(
     # Source and generated code.
@@ -172,7 +203,9 @@ if (tensorflow_BUILD_DEPENDENCIES)
   endif()
 else()
   find_package(PkgConfig)
-  find_package(ZLIB REQUIRED)
+  if (_tensorflow_need_zlib)
+    find_package(ZLIB REQUIRED)
+  endif()
   if (tensorflow_ENABLE_PNG)
     pkg_check_modules(PNG libpng12)
   endif()
@@ -186,7 +219,7 @@ else()
   pkg_check_modules(EIGEN3 eigen33-62bdceacdafa)
   find_library(GEMMLOWP_LIBRARIES eight_bit_int_gemm)
   find_path(_gemmlowp_include_dir gemmlowp/public/gemmlowp.h)
-  set(GEMMLOWP_INCLUDE_DIR "${_gemmlowp_include_dir}/gemmlowp" CACHE PATH "gemmlow include dir" FORCE)
+  set(GEMMLOWP_INCLUDE_DIR "${_gemmlowp_include_dir}/gemmlowp" CACHE PATH "gemmlow include dir")
   find_library(FARMHASH_LIBRARIES farmhash)
   find_library(HIGHWAYHASH_LIBRARIES highwayhash)
   find_path(HIGHWAYHASH_INCLUDE_DIR highwayhash/sip_hash.h)
@@ -294,8 +327,8 @@ if (tensorflow_ENABLE_GPU)
       "#ifndef CUDA_CUDA_CONFIG_H_\n"
       "#define CUDA_CUDA_CONFIG_H_\n"
       "#define TF_CUDA_CAPABILITIES CudaVersion(\"5.3\")\n"
-      "#define TF_CUDA_VERSION \"64_80\"\n"
-      "#define TF_CUDNN_VERSION \"64_5\"\n"
+      "#define TF_CUDA_VERSION \"8\"\n"
+      "#define TF_CUDNN_VERSION \"5\"\n"
       "#endif  // CUDA_CUDA_CONFIG_H_\n"
     )
 
@@ -360,30 +393,29 @@ if (tensorflow_BUILD_CC_TESTS OR tensorflow_BUILD_PYTHON_TESTS)
 endif()
 
 if (tensorflow_BUILD_LIBRARIES)
-  add_library(tensorflow_c SHARED
+  add_library(tensorflow SHARED
+    $<TARGET_OBJECTS:tf_core_ops>
     $<TARGET_OBJECTS:tf_core_cpu>
     $<TARGET_OBJECTS:tf_core_framework>
     $<TARGET_OBJECTS:tf_core_lib>
+    $<TARGET_OBJECTS:tf_cc_framework>
+    $<TARGET_OBJECTS:tf_cc_ops>
+    $<TARGET_OBJECTS:tf_core_direct_session>
+    $<TARGET_OBJECTS:tf_core_kernels_android>
+    $<TARGET_OBJECTS:tf_core_kernels>
+    $<TARGET_OBJECTS:tf_protos_cc_objs>
     "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.cc"
   )
-  set_target_properties(tensorflow_c PROPERTIES VERSION ${tensorflow_VERSION} SOVERSION ${tensorflow_VERSION_MAJOR})
+  set_target_properties(tensorflow PROPERTIES VERSION ${tensorflow_VERSION} SOVERSION ${tensorflow_VERSION_MAJOR})
+  target_link_libraries(tensorflow PRIVATE ${tensorflow_EXTERNAL_LIBRARIES})
+  install(TARGETS tensorflow LIBRARY DESTINATION lib)
+  set(tensorflow_LIB_REFS "-ltensorflow")
   set(tensorflow_c_hdrs "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.h")
   InstallTFHeaders(tensorflow_c_hdrs ${tensorflow_SOURCE_DIR} include)
 
-  add_library(tensorflow_cc SHARED
-    $<TARGET_OBJECTS:tf_core_cpu>
-    $<TARGET_OBJECTS:tf_core_framework>
-    $<TARGET_OBJECTS:tf_core_lib>
-    $<TARGET_OBJECTS:tf_cc_ops>
-    "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.cc"
-  )
-  set_target_properties(tensorflow_cc PROPERTIES VERSION ${tensorflow_VERSION} SOVERSION ${tensorflow_VERSION_MAJOR})
-
-  install(TARGETS tensorflow_c tensorflow_cc LIBRARY DESTINATION lib)
   install(DIRECTORY third_party/eigen3 DESTINATION include/tensorflow/third_party)
 
   configure_file(${tensorflow_SOURCE_DIR}/tensorflow.pc.in
                  ${CMAKE_CURRENT_BINARY_DIR}/tensorflow.pc @ONLY)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tensorflow.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 endif()
-
