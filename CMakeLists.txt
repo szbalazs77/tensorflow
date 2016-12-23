@@ -235,7 +235,7 @@ else()
     ${PNG_LIBRARIES}
     ${JPEG_LIBRARIES}
     ${GIF_LIBRARIES}
-    ${JSONCPP_LIBRARIES}
+    ${JSONCPP_LDFLAGS}
     ${EIGEN3_LIBRARIES}
     ${GEMMLOWP_LIBRARIES}
     ${FARMHASH_LIBRARIES}
@@ -418,4 +418,22 @@ if (tensorflow_BUILD_LIBRARIES)
   configure_file(${tensorflow_SOURCE_DIR}/tensorflow.pc.in
                  ${CMAKE_CURRENT_BINARY_DIR}/tensorflow.pc @ONLY)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tensorflow.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+endif()
+
+# Not strictly needed, but makes it easier to inspect the link command
+string(REPLACE "<OBJECTS>" "-Wl,--whole-archive <OBJECT_DIR>/objects.a -Wl,--no-whole-archive" CMAKE_CXX_CREATE_SHARED_LIBRARY "${CMAKE_CXX_CREATE_SHARED_LIBRARY}")
+set(CMAKE_CXX_CREATE_SHARED_LIBRARY
+  "<CMAKE_COMMAND> -E remove -f <OBJECT_DIR>/objects.a"
+  "<CMAKE_AR> cr <OBJECT_DIR>/objects.a <OBJECTS>"
+  "${CMAKE_CXX_CREATE_SHARED_LIBRARY}"
+)
+
+# For OE native builds, our LDFLAGS confuses CMake into stripping out
+# rpath and -L flags that we actually need
+if ("${CMAKE_SYSROOT}" STREQUAL "")
+  if (NOT "${CMAKE_INSTALL_PREFIX}" STREQUAL "")
+    list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib")
+    list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_LIBDIR}")
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  endif()
 endif()
