@@ -32,6 +32,9 @@ function(RELATIVE_PROTOBUF_GENERATE_CPP SRCS HDRS ROOT_DIR)
       DEPENDS ${ABS_FIL} ${_protoc_dep}
       COMMENT "Running C++ protocol buffer compiler on ${FIL}"
       VERBATIM )
+    if (tensorflow_BUILD_LIBRARIES)
+      install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb.h" DESTINATION "include/${REL_DIR}")
+    endif()
   endforeach()
 
   set_source_files_properties(${${SRCS}} ${${HDRS}} PROPERTIES GENERATED TRUE)
