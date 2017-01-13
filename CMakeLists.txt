@@ -393,6 +393,13 @@ if (tensorflow_BUILD_CC_TESTS OR tensorflow_BUILD_PYTHON_TESTS)
 endif()
 
 if (tensorflow_BUILD_LIBRARIES)
+  if (tensorflow_BUILD_ALL_KERNELS)
+    set(tf_kernel_objects $<TARGET_OBJECTS:tf_core_kernels>)
+  else ()
+    set(tf_kernel_objects
+      $<TARGET_OBJECTS:tf_core_kernels_android>
+      $<TARGET_OBJECTS:tf_core_kernels>)
+  endif ()
   add_library(tensorflow SHARED
     $<TARGET_OBJECTS:tf_core_ops>
     $<TARGET_OBJECTS:tf_core_cpu>
@@ -401,8 +408,7 @@ if (tensorflow_BUILD_LIBRARIES)
     $<TARGET_OBJECTS:tf_cc_framework>
     $<TARGET_OBJECTS:tf_cc_ops>
     $<TARGET_OBJECTS:tf_core_direct_session>
-    $<TARGET_OBJECTS:tf_core_kernels_android>
-    $<TARGET_OBJECTS:tf_core_kernels>
+    ${tf_kernel_objects}
     $<TARGET_OBJECTS:tf_protos_cc_objs>
     "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.cc"
   )
