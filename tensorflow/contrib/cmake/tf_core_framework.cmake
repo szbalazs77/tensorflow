@@ -291,4 +291,5 @@ add_dependencies(tf_core_framework
     proto_text
 )
 
+InstallTFHeaders(tf_core_lib_srcs ${tensorflow_SOURCE_DIR} include)
 InstallTFHeaders(tf_core_framework_srcs ${tensorflow_SOURCE_DIR} include)
