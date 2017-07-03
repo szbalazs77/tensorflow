@@ -343,6 +343,7 @@ if (tensorflow_ENABLE_GPU)
       "#define TF_CUDA_CAPABILITIES CudaVersion(\"5.3\")\n"
       "#define TF_CUDA_VERSION \"8\"\n"
       "#define TF_CUDNN_VERSION \"5\"\n"
+      "#define TF_CUDA_TOOLKIT_PATH \"${CUDA_TOOLKIT_ROOT_DIR}\"\n"
       "#endif  // CUDA_CUDA_CONFIG_H_\n"
     )
 
@@ -377,12 +378,8 @@ endif()
 # Let's get to work!
 include(tf_core_framework)
 include(tf_tools)
-# NOTE: Disabled until issue #3996 is fixed.
-# include(tf_stream_executor)
 if (tensorflow_ENABLE_GPU)
-  if (WIN32)
-    include(tf_stream_executor)
-  endif()
+  include(tf_stream_executor)
 endif()
 
 include(tf_core_cpu)
@@ -413,6 +410,11 @@ if (tensorflow_BUILD_LIBRARIES)
       $<TARGET_OBJECTS:tf_core_kernels_android>
       $<TARGET_OBJECTS:tf_core_kernels>)
   endif ()
+  if (tensorflow_ENABLE_GPU)
+    set(tf_stream_exec_objects $<TARGET_OBJECTS:tf_stream_executor>)
+  else()
+    set(tf_stream_exec_objects)
+  endif()
   add_library(tensorflow SHARED
     $<TARGET_OBJECTS:tf_core_ops>
     $<TARGET_OBJECTS:tf_core_cpu>
@@ -422,6 +424,7 @@ if (tensorflow_BUILD_LIBRARIES)
     $<TARGET_OBJECTS:tf_cc_ops>
     $<TARGET_OBJECTS:tf_core_direct_session>
     ${tf_kernel_objects}
+    ${tf_stream_exec_objects}
     $<TARGET_OBJECTS:tf_protos_cc_objs>
     "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.cc"
   )

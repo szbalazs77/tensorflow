@@ -424,16 +424,16 @@ add_dependencies(tf_core_kernels tf_core_cpu)
 
 if(WIN32)
   target_compile_options(tf_core_kernels PRIVATE /MP)
-  if (tensorflow_ENABLE_GPU)
-    set_source_files_properties(${tf_core_gpu_kernels_srcs} PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-    set(tf_core_gpu_kernels_lib tf_core_gpu_kernels)
-    cuda_add_library(${tf_core_gpu_kernels_lib} ${tf_core_gpu_kernels_srcs})
-    set_target_properties(${tf_core_gpu_kernels_lib}
-                          PROPERTIES DEBUG_POSTFIX ""
-                          COMPILE_FLAGS "${TF_REGULAR_CXX_FLAGS}"
-    )
-    add_dependencies(${tf_core_gpu_kernels_lib} tf_core_cpu)
-  endif()
+endif()
+if (tensorflow_ENABLE_GPU)
+  set_source_files_properties(${tf_core_gpu_kernels_srcs} PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
+  set(tf_core_gpu_kernels_lib tf_core_gpu_kernels)
+  cuda_add_library(${tf_core_gpu_kernels_lib} ${tf_core_gpu_kernels_srcs})
+  set_target_properties(${tf_core_gpu_kernels_lib}
+                        PROPERTIES DEBUG_POSTFIX ""
+                        COMPILE_FLAGS "${TF_REGULAR_CXX_FLAGS}"
+  )
+  add_dependencies(${tf_core_gpu_kernels_lib} tf_core_cpu)
 endif()
 
 InstallTFHeaders(tf_core_kernels_srcs ${tensorflow_SOURCE_DIR} include)
