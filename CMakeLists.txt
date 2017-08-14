@@ -349,7 +349,7 @@ if (tensorflow_ENABLE_GPU)
 
     # tf uses 'cudnn.h', but the actual header is versioned
     FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cudnn.h
-      "#include <cudnn_v5.h>"
+      "#include <cudnn_v6.h>"
     )
     FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cuda.h
       "#include <cuda.h>"
