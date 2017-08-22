@@ -333,6 +333,7 @@ if (tensorflow_ENABLE_GPU)
     # by default we assume compute cabability 5.3. If you change this change it in
     # cuda_config.h below
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};--include-path ${PROJECT_BINARY_DIR}/$\{build_configuration\};--expt-relaxed-constexpr)
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-DEIGEN_HAS_VARIADIC_TEMPLATES=0;-Xcompiler -fPIC)
     include_directories(${CUDA_TOOLKIT_INCLUDE} ${CUDA_TOOLKIT_TARGET_DIR}/extras/CUPTI/include)
     add_definitions(-DGOOGLE_CUDA=1 -DTF_EXTRA_CUDA_CAPABILITIES=5.3)
 
@@ -429,6 +430,9 @@ if (tensorflow_BUILD_LIBRARIES)
     "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.cc"
   )
   set_target_properties(tensorflow PROPERTIES VERSION ${tensorflow_VERSION} SOVERSION ${tensorflow_VERSION_MAJOR})
+  if (tensorflow_ENABLE_GPU)
+    target_link_libraries(tensorflow PRIVATE ${tf_core_gpu_kernels_lib})
+  endif()
   target_link_libraries(tensorflow PRIVATE ${tensorflow_EXTERNAL_LIBRARIES})
   install(TARGETS tensorflow LIBRARY DESTINATION lib)
   set(tensorflow_LIB_REFS "-ltensorflow")
