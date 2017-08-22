@@ -17,11 +17,6 @@ if (tensorflow_ENABLE_GPU)
     list(APPEND tf_stream_executor_srcs ${tf_stream_executor_gpu_srcs})
 endif()    
 
-file(GLOB_RECURSE tf_stream_executor_exclude_srcs
-    "${tensorflow_SOURCE_DIR}/tensorflow/stream_executor/cuda/cuda_platform_id.cc"
-)
-list(REMOVE_ITEM tf_stream_executor_srcs ${tf_stream_executor_exclude_srcs})
-
 add_library(tf_stream_executor OBJECT ${tf_stream_executor_srcs})
 
 add_dependencies(tf_stream_executor
