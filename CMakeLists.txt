@@ -330,13 +330,13 @@ if (tensorflow_ENABLE_GPU)
     find_package(CUDA 8.0 REQUIRED)
     find_library(CUDNN_LIBRARY NAMES cudnn libcudnn cudnn_static_v6 libcudnn_static_v6 cudnn_static_v5 libcudnn_static_v5)
     # now identify which version
-    find_path(CUDNN_HDRPATH cudnn_v6.h)
-    if(EXISTS ${CUDNN_HDRPATH})
+    find_path(CUDNN_V6_HDRPATH cudnn_v6.h)
+    if(EXISTS ${CUDNN_V6_HDRPATH})
       set(CUDNN_HEADER "cudnn_v6.h")
       set(CUDNN_MAJVER 6)
     else()
-      find_path(CUDNN_HDRPATH cudnn_v5.h)
-      if(EXISTS ${CUDNN_HDRPATH})
+      find_path(CUDNN_V5_HDRPATH cudnn_v5.h)
+      if(EXISTS ${CUDNN_V5_HDRPATH})
         set(CUDNN_HEADER "cudnn_v5.h")
         set(CUDNN_MAJVER 5)
       endif()
@@ -350,38 +350,40 @@ if (tensorflow_ENABLE_GPU)
     add_definitions(-DGOOGLE_CUDA=1 -DTF_EXTRA_CUDA_CAPABILITIES=5.3)
 
     # create cuda_config.h
-    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/cuda_config.h
-      "#ifndef CUDA_CUDA_CONFIG_H_\n"
-      "#define CUDA_CUDA_CONFIG_H_\n"
-      "#define TF_CUDA_CAPABILITIES CudaVersion(\"5.3\")\n"
-      "#define TF_CUDA_VERSION \"8\"\n"
-      "#define TF_CUDNN_VERSION \"${CUDNN_MAJVER}\"\n"
-      "#define TF_CUDA_TOOLKIT_PATH \"${CUDA_TOOLKIT_ROOT_DIR}\"\n"
-      "#endif  // CUDA_CUDA_CONFIG_H_\n"
-    )
+    if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/cuda_config.h)
+      FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/cuda_config.h
+        "#ifndef CUDA_CUDA_CONFIG_H_\n"
+        "#define CUDA_CUDA_CONFIG_H_\n"
+        "#define TF_CUDA_CAPABILITIES CudaVersion(\"5.3\")\n"
+        "#define TF_CUDA_VERSION \"8\"\n"
+        "#define TF_CUDNN_VERSION \"${CUDNN_MAJVER}\"\n"
+        "#define TF_CUDA_TOOLKIT_PATH \"${CUDA_TOOLKIT_ROOT_DIR}\"\n"
+        "#endif  // CUDA_CUDA_CONFIG_H_\n"
+      )
 
-    # tf uses 'cudnn.h', but the actual header is versioned
-    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cudnn.h
-      "#include <${CUDNN_HEADER}>"
-    )
-    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cuda.h
-      "#include <cuda.h>"
-    )
-    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cublas_v2.h
-      "#include <cublas_v2.h>"
-    )
-    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cuComplex.h
-      "#include <cuComplex.h>"
-    )
-    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cufft.h
-      "#include <cufft.h>"
-    )
-    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/curand.h
-      "#include <curand.h>"
-    )
-    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/extras/CUPTI/include/cupti.h
-      "#include <cupti.h>"
-    )
+      # tf uses 'cudnn.h', but the actual header is versioned
+      FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cudnn.h
+        "#include <${CUDNN_HEADER}>"
+      )
+      FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cuda.h
+        "#include <cuda.h>"
+      )
+      FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cublas_v2.h
+        "#include <cublas_v2.h>"
+      )
+      FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cuComplex.h
+        "#include <cuComplex.h>"
+      )
+      FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cufft.h
+        "#include <cufft.h>"
+      )
+      FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/curand.h
+        "#include <curand.h>"
+      )
+      FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/extras/CUPTI/include/cupti.h
+        "#include <cupti.h>"
+	)
+    endif()
     include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus)
     # add cuda libraries to tensorflow_EXTERNAL_LIBRARIES
     list(APPEND tensorflow_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES} ${CUDNN_LIBRARY})
