@@ -328,7 +328,19 @@ if (tensorflow_ENABLE_GPU)
     list(APPEND tensorflow_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES})
   else()
     find_package(CUDA 8.0 REQUIRED)
-    find_library(CUDNN_LIBRARY NAMES cudnn libcudnn cudnn_static_v5 libcudnn_static_v5)
+    find_library(CUDNN_LIBRARY NAMES cudnn libcudnn cudnn_static_v6 libcudnn_static_v6 cudnn_static_v5 libcudnn_static_v5)
+    # now identify which version
+    find_path(CUDNN_HDRPATH cudnn_v6.h)
+    if(EXISTS ${CUDNN_HDRPATH})
+      set(CUDNN_HEADER "cudnn_v6.h")
+      set(CUDNN_MAJVER 6)
+    else()
+      find_path(CUDNN_HDRPATH cudnn_v5.h)
+      if(EXISTS ${CUDNN_HDRPATH})
+        set(CUDNN_HEADER "cudnn_v5.h")
+        set(CUDNN_MAJVER 5)
+      endif()
+    endif()
 
     # by default we assume compute cabability 5.3. If you change this change it in
     # cuda_config.h below
@@ -343,14 +355,14 @@ if (tensorflow_ENABLE_GPU)
       "#define CUDA_CUDA_CONFIG_H_\n"
       "#define TF_CUDA_CAPABILITIES CudaVersion(\"5.3\")\n"
       "#define TF_CUDA_VERSION \"8\"\n"
-      "#define TF_CUDNN_VERSION \"5\"\n"
+      "#define TF_CUDNN_VERSION \"${CUDNN_MAJVER}\"\n"
       "#define TF_CUDA_TOOLKIT_PATH \"${CUDA_TOOLKIT_ROOT_DIR}\"\n"
       "#endif  // CUDA_CUDA_CONFIG_H_\n"
     )
 
     # tf uses 'cudnn.h', but the actual header is versioned
     FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cudnn.h
-      "#include <cudnn_v6.h>"
+      "#include <${CUDNN_HEADER}>"
     )
     FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cuda.h
       "#include <cuda.h>"
