@@ -355,7 +355,7 @@ if (tensorflow_ENABLE_GPU)
         "#ifndef CUDA_CUDA_CONFIG_H_\n"
         "#define CUDA_CUDA_CONFIG_H_\n"
         "#define TF_CUDA_CAPABILITIES CudaVersion(\"5.3\")\n"
-        "#define TF_CUDA_VERSION \"8\"\n"
+        "#define TF_CUDA_VERSION \"8.0\"\n"
         "#define TF_CUDNN_VERSION \"${CUDNN_MAJVER}\"\n"
         "#define TF_CUDA_TOOLKIT_PATH \"${CUDA_TOOLKIT_ROOT_DIR}\"\n"
         "#endif  // CUDA_CUDA_CONFIG_H_\n"
