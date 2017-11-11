@@ -32,7 +32,7 @@ list(REMOVE_ITEM tf_core_distributed_runtime_srcs ${tf_core_distributed_runtime_
 add_library(tf_core_distributed_runtime OBJECT ${tf_core_distributed_runtime_srcs})
 
 add_dependencies(tf_core_distributed_runtime
-    tf_core_cpu grpc
+    tf_core_cpu ${_tf_GRPC_DEPENDENCY}
 )
 
 ########################################################

@@ -51,7 +51,6 @@ option(tensorflow_BUILD_PROTO_TEXT "Build proto_text tool" ON)
 option(tensorflow_ENABLE_GIF "Enable GIF support" OFF)
 option(tensorflow_ENABLE_JPEG "Enable JPEG support" OFF)
 option(tensorflow_ENABLE_PNG "Enable PNG support" OFF)
-option(tensorflow_BUILD_LIBRARIES "Build and install libraries and headers" ON)
 option(tensorflow_ENABLE_TYPES_SLIM "Reduce number of supported types" OFF)
 option(tensorflow_ENABLE_SELECTIVE_REGISTRATION "Enable selective registration of ops" OFF)
 
@@ -71,7 +70,7 @@ function(SHOW_VARIABLES)
 endfunction()
 
 function(InstallTFHeaders HDR_VAR BASE_DIR DEST_DIR)
-  if (tensorflow_BUILD_LIBRARIES)
+  if (tensorflow_BUILD_SHARED_LIB)
     string(LENGTH ${BASE_DIR} _base_len)
     math(EXPR _substr_start "${_base_len} + 1")
     foreach (_file ${${HDR_VAR}})
@@ -160,11 +159,12 @@ if (tensorflow_BUILD_DEPENDENCIES)
   include(nsync)
   include(protobuf)
   include(re2)
-  include(cub)
   include(sqlite)
   if (tensorflow_BUILD_CC_TESTS)
     include(googletest)
   endif()
+
+  set(_tf_PROTOBUF_DEPENDENCY protobuf)
 
   set(tensorflow_EXTERNAL_LIBRARIES
     ${zlib_STATIC_LIBRARIES}
@@ -194,7 +194,6 @@ if (tensorflow_BUILD_DEPENDENCIES)
     protobuf
     eigen
     gemmlowp
-    cub
     fft2d
     re2
     sqlite_copy_headers_to_destination
@@ -215,7 +214,6 @@ if (tensorflow_BUILD_DEPENDENCIES)
     ${jsoncpp_INCLUDE_DIR}
     ${farmhash_INCLUDE_DIR}
     ${highwayhash_INCLUDE_DIR}
-    ${cub_INCLUDE_DIR}
     ${nsync_INCLUDE_DIR}
     ${PROTOBUF_INCLUDE_DIRS}
     ${re2_INCLUDE_DIR}
@@ -230,6 +228,7 @@ if (tensorflow_BUILD_DEPENDENCIES)
   endif()
   if(tensorflow_ENABLE_GRPC_SUPPORT)
     include(grpc)
+    set(_tf_GRPC_DEPENDENCY grpc)
     list(APPEND tensorflow_EXTERNAL_LIBRARIES ${grpc_STATIC_LIBRARIES})
     list(APPEND tensorflow_EXTERNAL_DEPENDENCIES grpc)
     include_directories(${GRPC_INCLUDE_DIRS})
@@ -248,20 +247,24 @@ if (tensorflow_BUILD_DEPENDENCIES)
   endif()
 else()
   find_package(PkgConfig)
-  if (_tensorflow_need_zlib)
-    find_package(ZLIB REQUIRED)
-  endif()
+  find_package(ZLIB REQUIRED)
   if (tensorflow_ENABLE_PNG)
     pkg_check_modules(PNG libpng12)
   endif()
   if (tensorflow_ENABLE_GIF)
-    pkg_check_modules(GIF gif)
+    find_library(GIF_LIBRARIES gif)
   endif()
   if (tensorflow_ENABLE_JPEG)
     find_package(JPEG REQUIRED)
   endif()
   find_library(LMDB_LIBRARIES lmdb)
   pkg_check_modules(JSONCPP jsoncpp)
+  if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/include/json/json.h)
+    FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/include/json/json.h
+      "#include <json/json.h>"
+    )
+  endif()
+
   pkg_check_modules(EIGEN3 eigen33-429aa5254200)
   find_library(GEMMLOWP_LIBRARIES eight_bit_int_gemm)
   find_path(_gemmlowp_include_dir gemmlowp/public/gemmlowp.h)
@@ -269,16 +272,16 @@ else()
   find_library(FARMHASH_LIBRARIES farmhash)
   if (tensorflow_ENABLE_AUDIO_SUPPORT)
     find_library(FFT2D_LIBRARIES fft2d)
-  endif
+  endif()
   find_library(HIGHWAYHASH_LIBRARIES highwayhash)
   find_path(HIGHWAYHASH_INCLUDE_DIR highwayhash/sip_hash.h)
-  # XXX - nsync
+  find_library(NSYNC_LIBRARIES nsync)
   find_package(Protobuf REQUIRED)
   pkg_check_modules(RE2 re2)
-  # XXX- cub
   pkg_check_modules(SQLITE sqlite3)
   if (tensorflow_ENABLE_GRPC_SUPPORT)
-    find_package(grpc REQUIRED)
+    include(gRPCConfig)
+    set(GRPC_LDFLAGS -lgrpc++_unsecure -lgrpc_unsecure -lgpr -lcares)
   endif()
   if (tensorflow_ENABLE_SSL_SUPPORT)
     find_package(OpenSSL REQUIRED)
@@ -301,7 +304,7 @@ else()
     ${RE2_LIBRARIES}
     ${SQLITE_LIBRARIES}
     ${OPENSSL_LIBRARIES}
-    ${GRPC_STATIC_LIBRARIES}
+    ${GRPC_LDFLAGS}
   )
   if (tensorflow_BUILD_CC_TESTS)
     find_package(googletest REQUIRED)
@@ -318,7 +321,7 @@ else()
     ${GIF_INCLUDE_DIR}
     ${EIGEN3_INCLUDE_DIRS}
     ${GEMMLOWP_INCLUDE_DIR}
-    ${JSONCPP_INCLUDE_DIR}
+    ${JSONCPP_INCLUDE_DIRS}
     ${HIGHWAYHASH_INCLUDE_DIR}
     ${PROTOBUF_INCLUDE_DIRS}
     ${OPENSSL_INCLUDE_DIRS}
@@ -458,6 +461,13 @@ if (tensorflow_ENABLE_GPU)
     # add cuda libraries to tensorflow_EXTERNAL_LIBRARIES
     list(APPEND tensorflow_EXTERNAL_LIBRARIES ${CUDA_LIBRARIES} ${CUDNN_LIBRARY})
   endif(WIN32)
+  if (tensorflow_BUILD_DEPENDENCIES)
+    include(cub)
+    list(APPEND tensorflow_EXTERNAL_DEPENDENCIES cub)
+  else()
+    find_path(cub_INCLUDE_DIR cub/cub.cuh)
+  endif()
+    include_directories(${cub_INCLUDE_DIR})
 else(tensorflow_ENABLE_GPU)
   if(WIN32)
     set(tensorflow_BUILD_INFO_FLAGS --build_config cpu --key_value
@@ -472,81 +482,38 @@ if(NOT ${PYTHONINTERP_FOUND})
 endif()
 
 # Let's get to work!
-include(tf_core_framework.cmake)
+include(tf_core_framework)
 # NOTE: Disabled until issue #3996 is fixed.
-# include(tf_stream_executor.cmake)
+# include(tf_stream_executor)
 if (tensorflow_ENABLE_GPU)
-    include(tf_stream_executor.cmake)
+    include(tf_stream_executor)
 endif()
 
-include(tf_core_cpu.cmake)
-include(tf_core_ops.cmake)
-include(tf_core_direct_session.cmake)
-include(tf_core_kernels.cmake)
+include(tf_core_cpu)
+include(tf_core_ops)
+include(tf_core_direct_session)
+include(tf_core_kernels)
 if(tensorflow_ENABLE_GRPC_SUPPORT)
-  include(tf_core_distributed_runtime.cmake)
+  include(tf_core_distributed_runtime)
 endif()
 # We include tf_cc_ops first, because tf_c depends on tf_cc.
-include(tf_cc_ops.cmake)
-include(tf_c.cmake)
-include(tf_grappler.cmake)
-include(tf_core_profiler.cmake)
+include(tf_cc_ops)
+include(tf_c)
+include(tf_grappler)
+include(tf_core_profiler)
 if(tensorflow_BUILD_CC_EXAMPLE)
-  include(tf_tutorials.cmake)
-  include(tf_label_image_example.cmake)
+  include(tf_tutorials)
+  include(tf_label_image_example)
 endif()
-include(tf_tools.cmake)
+include(tf_tools)
 if(tensorflow_BUILD_PYTHON_BINDINGS)
-  include(tf_python.cmake)
+  include(tf_python)
 endif()
 if(tensorflow_BUILD_SHARED_LIB)
-  include(tf_shared_lib.cmake)
+  include(tf_shared_lib)
 endif()
 if(tensorflow_BUILD_CC_TESTS OR tensorflow_BUILD_PYTHON_TESTS)
-  include(tf_tests.cmake)
-endif()
-
-if (tensorflow_BUILD_LIBRARIES)
-  if (tensorflow_BUILD_ALL_KERNELS)
-    set(tf_kernel_objects $<TARGET_OBJECTS:tf_core_kernels>)
-  else ()
-    set(tf_kernel_objects
-      $<TARGET_OBJECTS:tf_core_kernels_android>
-      $<TARGET_OBJECTS:tf_core_kernels>)
-  endif ()
-  if (tensorflow_ENABLE_GPU)
-    set(tf_stream_exec_objects $<TARGET_OBJECTS:tf_stream_executor>)
-  else()
-    set(tf_stream_exec_objects)
-  endif()
-  add_library(tensorflow SHARED
-    $<TARGET_OBJECTS:tf_core_ops>
-    $<TARGET_OBJECTS:tf_core_cpu>
-    $<TARGET_OBJECTS:tf_core_framework>
-    $<TARGET_OBJECTS:tf_core_lib>
-    $<TARGET_OBJECTS:tf_cc_framework>
-    $<TARGET_OBJECTS:tf_cc_ops>
-    $<TARGET_OBJECTS:tf_core_direct_session>
-    ${tf_kernel_objects}
-    ${tf_stream_exec_objects}
-    $<TARGET_OBJECTS:tf_protos_cc_objs>
-    "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.cc"
-  )
-  set_target_properties(tensorflow PROPERTIES VERSION ${tensorflow_VERSION} SOVERSION ${tensorflow_VERSION_MAJOR})
-  if (tensorflow_ENABLE_GPU)
-    target_link_libraries(tensorflow PRIVATE ${tf_core_gpu_kernels_lib})
-  endif()
-  target_link_libraries(tensorflow PRIVATE ${tensorflow_EXTERNAL_LIBRARIES})
-  install(TARGETS tensorflow LIBRARY DESTINATION lib)
-  set(tensorflow_LIB_REFS "-ltensorflow")
-  set(tensorflow_c_hdrs "${tensorflow_SOURCE_DIR}/tensorflow/c/c_api.h")
-  InstallTFHeaders(tensorflow_c_hdrs ${tensorflow_SOURCE_DIR} include)
-
-  install(DIRECTORY third_party/eigen3 DESTINATION include/tensorflow/third_party)
-
-  configure_file(${tensorflow_SOURCE_DIR}/tensorflow.pc.in
-                 ${CMAKE_CURRENT_BINARY_DIR}/tensorflow.pc @ONLY)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tensorflow.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+  include(tf_tests)
 endif()
 
 # Not strictly needed, but makes it easier to inspect the link command

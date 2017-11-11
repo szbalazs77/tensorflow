@@ -33,9 +33,9 @@ target_link_libraries(${proto_text} PUBLIC
 )
 
 add_dependencies(${proto_text} tf_core_lib)
-if(tensorflow_ENABLE_GRPC_SUPPORT)
-    add_dependencies(${proto_text} grpc)
-endif(tensorflow_ENABLE_GRPC_SUPPORT)
+if(tensorflow_BUILD_DEPENDENCIES)
+  add_dependencies(${proto_text} ${_tf_GRPC_DEPENDENCY})
+endif(tensorflow_BUILD_DEPENDENCIES)
 
 file(GLOB_RECURSE tf_tools_transform_graph_lib_srcs
     "${tensorflow_source_dir}/tensorflow/tools/graph_transforms/*.h"
@@ -147,8 +147,5 @@ target_link_libraries(${benchmark_model} PUBLIC
   ${tf_core_gpu_kernels_lib}
   ${tensorflow_EXTERNAL_LIBRARIES}
 )
-if (tensorflow_ENABLE_GRPC_SUPPORT)
-    add_dependencies(${proto_text} grpc)
-endif()
 
 install(TARGETS ${proto_text} RUNTIME DESTINATION bin/tensorflow)

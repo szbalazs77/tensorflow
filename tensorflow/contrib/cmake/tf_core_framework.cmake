@@ -12,6 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+
+if (tensorflow_BUILD_DEPENDENCIES)
+  set(_protoc_dep ${PROTOBUF_PROTOC_EXECUTABLE})
+  set(_grpc_plugin ${GRPC_BUILD}/grpc_cpp_plugin)
+else()
+  set(_grpc_plugin $<TARGET_PROPERTY:gRPC::grpc_cpp_plugin,IMPORTED_LOCATION_NOCONFIG>)
+endif()
+
 ########################################################
 # RELATIVE_PROTOBUF_GENERATE_CPP function
 ########################################################
@@ -21,10 +29,6 @@ function(RELATIVE_PROTOBUF_GENERATE_CPP SRCS HDRS ROOT_DIR)
   if(NOT ARGN)
     message(SEND_ERROR "Error: RELATIVE_PROTOBUF_GENERATE_CPP() called without any proto files")
     return()
-  endif()
-
-  if (tensorflow_BUILD_DEPENDENCIES)
-    set(_protoc_dep ${PROTOBUF_PROTOC_EXECUTABLE})
   endif()
 
   set(${SRCS})
@@ -46,7 +50,7 @@ function(RELATIVE_PROTOBUF_GENERATE_CPP SRCS HDRS ROOT_DIR)
       DEPENDS ${ABS_FIL} ${_protoc_dep}
       COMMENT "Running C++ protocol buffer compiler on ${FIL}"
       VERBATIM )
-    if (tensorflow_BUILD_LIBRARIES)
+    if (tensorflow_BUILD_SHARED_LIB)
       install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb.h" DESTINATION "include/${REL_DIR}")
     endif()
   endforeach()
@@ -82,8 +86,8 @@ if(NOT WIN32)
                "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb.cc"
                "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb.h"
         COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
-        ARGS --grpc_out ${CMAKE_CURRENT_BINARY_DIR} --cpp_out ${CMAKE_CURRENT_BINARY_DIR} --plugin protoc-gen-grpc=${GRPC_BUILD}/grpc_cpp_plugin -I ${ROOT_DIR} ${ABS_FIL} -I ${PROTOBUF_INCLUDE_DIRS}
-        DEPENDS ${ABS_FIL} protobuf grpc
+        ARGS --grpc_out ${CMAKE_CURRENT_BINARY_DIR} --cpp_out ${CMAKE_CURRENT_BINARY_DIR} --plugin=protoc-gen-grpc=${_grpc_plugin} -I ${ROOT_DIR} ${ABS_FIL} -I ${PROTOBUF_INCLUDE_DIRS}
+        DEPENDS ${ABS_FIL} ${tf_PROTOBUF_DEPENDENCY} ${_tf_GRPC_DEPENDENCY}
         COMMENT "Running C++ protocol buffer grpc compiler on ${FIL}"
         VERBATIM )
     endforeach()
@@ -123,7 +127,7 @@ function(RELATIVE_PROTOBUF_TEXT_GENERATE_CPP SRCS HDRS ROOT_DIR)
       DEPENDS ${ABS_FIL} ${_proto_text_dep}
       COMMENT "Running C++ protocol buffer text compiler (${PROTO_TEXT_EXE}) on ${FIL}"
       VERBATIM )
-    if (tensorflow_BUILD_LIBRARIES)
+    if (tensorflow_BUILD_SHARED_LIB)
       install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb_text.h" DESTINATION "include/${REL_DIR}")
     endif()
   endforeach()
@@ -189,12 +193,14 @@ RELATIVE_PROTOBUF_TEXT_GENERATE_CPP(PROTO_TEXT_SRCS PROTO_TEXT_HDRS
 if(WIN32)
   add_library(tf_protos_cc ${PROTO_SRCS} ${PROTO_HDRS})
 else()
-  file(GLOB_RECURSE tf_protos_grpc_cc_srcs RELATIVE ${tensorflow_source_dir}
-      "${tensorflow_source_dir}/tensorflow/core/debug/*.proto"
-  )
-  RELATIVE_PROTOBUF_GENERATE_GRPC_CPP(PROTO_GRPC_SRCS PROTO_GRPC_HDRS
+  if(tensorflow_ENABLE_GRPC_SUPPORT)
+    file(GLOB_RECURSE tf_protos_grpc_cc_srcs RELATIVE ${tensorflow_source_dir}
+        "${tensorflow_source_dir}/tensorflow/core/debug/*.proto"
+    )
+    RELATIVE_PROTOBUF_GENERATE_GRPC_CPP(PROTO_GRPC_SRCS PROTO_GRPC_HDRS
       ${tensorflow_source_dir} ${tf_protos_grpc_cc_srcs}
-  )
+    )
+  endif()
   add_library(tf_protos_cc ${PROTO_GRPC_SRCS} ${PROTO_GRPC_HDRS} ${PROTO_SRCS} ${PROTO_HDRS})
 endif()
 
@@ -202,6 +208,8 @@ endif()
 # tf_core_lib library
 ########################################################
 file(GLOB_RECURSE tf_core_lib_srcs
+    "${tensorflow_source_dir}/tensorflow/core/lib/bmp/*.h"
+    "${tensorflow_source_dir}/tensorflow/core/lib/bmp/*.cc"
     "${tensorflow_source_dir}/tensorflow/core/lib/core/*.h"
     "${tensorflow_source_dir}/tensorflow/core/lib/core/*.cc"
     "${tensorflow_source_dir}/tensorflow/core/lib/gtl/*.h"
@@ -220,8 +228,6 @@ file(GLOB_RECURSE tf_core_lib_srcs
     "${tensorflow_source_dir}/tensorflow/core/lib/random/*.cc"
     "${tensorflow_source_dir}/tensorflow/core/lib/strings/*.h"
     "${tensorflow_source_dir}/tensorflow/core/lib/strings/*.cc"
-    "${tensorflow_source_dir}/tensorflow/core/lib/wav/*.h"
-    "${tensorflow_source_dir}/tensorflow/core/lib/wav/*.cc"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/public/*.h"
 )
 
@@ -247,6 +253,14 @@ if(tensorflow_ENABLE_PNG)
         "${tensorflow_source_dir}/tensorflow/core/lib/png/*.cc"
     )
     list(APPEND tf_core_lib_srcs ${tf_core_lib_png_srcs})
+endif()
+
+if(tensorflow_ENABLE_AUDIO_SUPPORT)
+    file(GLOB tf_core_lib_wav_srcs
+        "${tensorflow_source_dir}/tensorflow/core/lib/wav/*.h"
+        "${tensorflow_source_dir}/tensorflow/core/lib/wav/*.cc"
+    )
+    list(APPEND tf_core_lib_srcs ${tf_core_lib_wav_srcs})
 endif()
 
 file(GLOB tf_core_platform_srcs
