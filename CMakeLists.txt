@@ -119,6 +119,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -std=c++11")
 endif()
 
+if(tensorflow_ENABLE_AUDIO_SUPPORT)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTF_AUDIO_SUPPORT")
+endif()
+
 if (tensorflow_OPTIMIZE_FOR_NATIVE_ARCH)
   include(CheckCXXCompilerFlag)
   CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_OPT_ARCH_NATIVE_SUPPORTED)

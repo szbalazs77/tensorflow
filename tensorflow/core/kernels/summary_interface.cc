@@ -23,7 +23,9 @@ limitations under the License.
 #include "tensorflow/core/lib/histogram/histogram.h"
 #include "tensorflow/core/lib/io/path.h"
 #include "tensorflow/core/lib/png/png_io.h"
+#ifdef TF_AUDIO_SUPPORT
 #include "tensorflow/core/lib/wav/wav_io.h"
+#endif
 #include "tensorflow/core/util/event.pb.h"
 #include "tensorflow/core/util/events_writer.h"
 
@@ -336,7 +338,7 @@ class SummaryWriterImpl : public SummaryWriterInterface {
 
     return Enqueue(global_step, s);
   }
-
+#ifdef TF_AUDIO_SUPPORT
   Status WriteAudio(int64 global_step, Tensor tensor, const string& tag,
                     int max_outputs, float sample_rate) override {
     if (sample_rate <= 0.0f) {
@@ -378,7 +380,7 @@ class SummaryWriterImpl : public SummaryWriterInterface {
 
     return Enqueue(global_step, s);
   }
-
+#endif
   string DebugString() override { return "SummaryWriterImpl"; }
 
  private:

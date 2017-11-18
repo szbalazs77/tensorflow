@@ -41,8 +41,10 @@ class SummaryWriterInterface : public ResourceBase {
   virtual Status WriteImage(int64 global_step, Tensor t, const string& tag,
                             int max_images, Tensor bad_color) = 0;
 
+#ifdef TF_AUDIO_SUPPORT
   virtual Status WriteAudio(int64 global_step, Tensor t, const string& tag,
                             int max_outputs_, float sample_rate) = 0;
+#endif
 };
 
 // Creates a SummaryWriterInterface instance which writes to a file. It will

@@ -184,6 +184,7 @@ max_images: Max number of batch elements to generate images for.
 bad_color: Color to use for pixels with non-finite values.
 )doc");
 
+#ifdef TF_AUDIO_SUPPORT
 REGISTER_OP("WriteAudioSummary")
     .Input("writer: resource")
     .Input("global_step: int64")
@@ -214,5 +215,5 @@ tensor: 2-D of shape `[batch_size, frames]`.
 sample_rate: The sample rate of the signal in hertz.
 max_outputs: Max number of batch elements to generate audio for.
 )doc");
-
+#endif
 }  // namespace tensorflow

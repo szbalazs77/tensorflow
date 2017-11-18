@@ -183,6 +183,7 @@ class WriteImageSummaryOp : public OpKernel {
 REGISTER_KERNEL_BUILDER(Name("WriteImageSummary").Device(DEVICE_CPU),
                         WriteImageSummaryOp);
 
+#ifdef TF_AUDIO_SUPPORT
 class WriteAudioSummaryOp : public OpKernel {
  public:
   explicit WriteAudioSummaryOp(OpKernelConstruction* ctx) : OpKernel(ctx) {
@@ -218,4 +219,5 @@ class WriteAudioSummaryOp : public OpKernel {
 REGISTER_KERNEL_BUILDER(Name("WriteAudioSummary").Device(DEVICE_CPU),
                         WriteAudioSummaryOp);
 
+#endif
 }  // namespace tensorflow

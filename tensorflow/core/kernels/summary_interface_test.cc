@@ -148,6 +148,7 @@ TEST(SummaryInterfaceTest, WriteImage) {
       }));
 }
 
+#ifdef TF_AUDIO_SUPPORT
 TEST(SummaryInterfaceTest, WriteAudio) {
   TF_CHECK_OK(SummaryTestHelper(
       "audio_test",
@@ -165,6 +166,6 @@ TEST(SummaryInterfaceTest, WriteAudio) {
         CHECK(e.summary().value(0).has_audio());
       }));
 }
-
+#endif
 }  // namespace
 }  // namespace tensorflow
