@@ -6,6 +6,6 @@ exec_prefix=@CMAKE_INSTALL_PREFIX@
 libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
 includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 
-Cflags: -I${includedir}/tensorflow
+Cflags: -I${includedir}/tensorflow -I${includedir}/@EIGEN3_INCLUDE_SUBDIR@
 Libs: -L${libdir} @tensorflow_LIB_REFS@
 Libs.private: -lpng12 -ljpeg -lstdc++ -lpthread -ldl -lm

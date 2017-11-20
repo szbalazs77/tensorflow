@@ -270,6 +270,7 @@ else()
   endif()
 
   pkg_check_modules(EIGEN3 eigen33-429aa5254200)
+  get_filename_component(EIGEN3_INCLUDE_SUBDIR ${EIGEN3_INCLUDE_DIRS} NAME)
   find_library(GEMMLOWP_LIBRARIES eight_bit_int_gemm)
   find_path(_gemmlowp_include_dir gemmlowp/public/gemmlowp.h)
   set(GEMMLOWP_INCLUDE_DIR "${_gemmlowp_include_dir}/gemmlowp" CACHE PATH "gemmlow include dir")
