@@ -551,6 +551,7 @@ file(GLOB_RECURSE tf_core_gpu_kernels_srcs
     "${tensorflow_source_dir}/tensorflow/core/kernels/*.cu.cc"
     "${tensorflow_source_dir}/tensorflow/contrib/framework/kernels/zero_initializer_op_gpu.cu.cc"
     "${tensorflow_source_dir}/tensorflow/contrib/image/kernels/*.cu.cc"
+    "${tensorflow_source_dir}/tensorflow/contrib/resampler/kernels/*.cu.cc"
     "${tensorflow_source_dir}/tensorflow/contrib/rnn/kernels/*.cu.cc"
     "${tensorflow_source_dir}/tensorflow/contrib/seq2seq/kernels/*.cu.cc"
 )
