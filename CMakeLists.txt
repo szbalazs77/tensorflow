@@ -422,6 +422,10 @@ if (tensorflow_ENABLE_GPU)
     include_directories(${CUDA_INCLUDE})
     add_definitions(-DGOOGLE_CUDA=1 -DTF_EXTRA_CUDA_CAPABILITIES=5.3)
 
+    set(CUDA_LIBRARIES ${CUDA_LIBRARIES} ${CUDA_TOOLKIT_TARGET_DIR}/lib/stubs/libcuda.so
+      ${CUDA_CUDART_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cufft_LIBRARY}
+      ${CUDA_curand_LIBRARY} ${CUDA_cupti_LIBRARY} ${CUDA_cusolver_LIBRARY})
+
     # create cuda_config.h
     if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/cuda_config.h)
       FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/cuda_config.h
