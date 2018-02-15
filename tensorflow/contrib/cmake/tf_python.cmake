@@ -518,11 +518,13 @@ add_python_module("tensorflow/contrib/ndlstm/python")
 add_python_module("tensorflow/contrib/nn")
 add_python_module("tensorflow/contrib/nn/python")
 add_python_module("tensorflow/contrib/nn/python/ops")
+if(tensorflow_ENABLE_NCCL_SUPPORT)
 add_python_module("tensorflow/contrib/nccl")
 add_python_module("tensorflow/contrib/nccl/kernels")
 add_python_module("tensorflow/contrib/nccl/ops")
 add_python_module("tensorflow/contrib/nccl/python")
 add_python_module("tensorflow/contrib/nccl/python/ops")
+endif()
 add_python_module("tensorflow/contrib/nearest_neighbor/kernels")
 add_python_module("tensorflow/contrib/nearest_neighbor/ops")
 add_python_module("tensorflow/contrib/nearest_neighbor/python")
@@ -781,8 +783,10 @@ GENERATE_PYTHON_OP_LIB("contrib_layers_sparse_feature_cross_ops"
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/contrib/layers/ops/gen_sparse_feature_cross_op.py)
 GENERATE_PYTHON_OP_LIB("contrib_memory_stats_ops"
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/contrib/memory_stats/ops/gen_memory_stats_ops.py)
+if(tensorflow_ENABLE_NCCL_SUPPORT)
 GENERATE_PYTHON_OP_LIB("contrib_nccl_ops"
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/contrib/nccl/ops/gen_nccl_ops.py)
+endif()
 GENERATE_PYTHON_OP_LIB("contrib_nearest_neighbor_ops"
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/tf_python/tensorflow/contrib/nearest_neighbor/ops/gen_nearest_neighbor_ops.py)
 GENERATE_PYTHON_OP_LIB("contrib_resampler_ops"
