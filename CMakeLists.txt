@@ -18,8 +18,8 @@ if (NOT ${_tensorflow_git_result} EQUAL 0)
   set(tensorflow_VERSION_STRING "unknown")
 endif()
 
-# Set C++14 as standard for the whole project
-set(CMAKE_CXX_STANDARD 14)
+# Set C++11 as standard for the whole project
+set(CMAKE_CXX_STANDARD 11)
 
 list(INSERT CMAKE_MODULE_PATH 0 "${tensorflow_SOURCE_DIR}/tensorflow/contrib/cmake")
 
