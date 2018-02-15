@@ -36,7 +36,7 @@ if(WIN32)
       $<TARGET_OBJECTS:tf_tools_transform_graph_lib>
       $<$<BOOL:${tensorflow_ENABLE_GRPC_SUPPORT}>:$<TARGET_OBJECTS:tf_core_distributed_runtime>>
       $<TARGET_OBJECTS:tf_core_kernels>
-      $<$<BOOL:${tensorflow_ENABLE_GPU}>:$<TARGET_OBJECTS:tf_core_kernels_cpu_only>>
+      $<$<AND:$<BOOL:${tensorflow_ENABLE_GPU}>,$<BOOL:${WIN32}>>:$<TARGET_OBJECTS:tf_core_kernels_cpu_only>>
       $<$<BOOL:${tensorflow_ENABLE_GPU}>:$<TARGET_OBJECTS:tf_stream_executor>>
   )
 
@@ -81,7 +81,7 @@ add_library(tensorflow SHARED
     $<TARGET_OBJECTS:tf_tools_transform_graph_lib>
     $<$<BOOL:${tensorflow_ENABLE_GRPC_SUPPORT}>:$<TARGET_OBJECTS:tf_core_distributed_runtime>>
     ${tf_kernel_objects}
-    $<$<BOOL:${tensorflow_ENABLE_GPU}>:$<TARGET_OBJECTS:tf_core_kernels_cpu_only>>
+    $<$<AND:$<BOOL:${tensorflow_ENABLE_GPU}>,$<BOOL:${WIN32}>>:$<TARGET_OBJECTS:tf_core_kernels_cpu_only>>
     $<$<BOOL:${tensorflow_ENABLE_GPU}>:$<TARGET_OBJECTS:tf_stream_executor>>
     ${tensorflow_deffile}
 )
