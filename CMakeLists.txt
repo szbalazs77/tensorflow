@@ -458,8 +458,8 @@ if (tensorflow_ENABLE_GPU)
       FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cuda_runtime_api.h
         "#include <cuda_runtime_api.h>"
       )
-      FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cudSolverDn.h
-        "#include <cuSolverDn.h>"
+      FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus/cuda/include/cusolverDn.h
+        "#include <cusolverDn.h>"
       )
     endif()
     include_directories(${CMAKE_CURRENT_BINARY_DIR}/third_party/gpus)
