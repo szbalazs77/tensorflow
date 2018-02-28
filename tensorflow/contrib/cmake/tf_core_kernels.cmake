@@ -168,7 +168,7 @@ else(tensorflow_BUILD_ALL_KERNELS)
     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/image_resizer_state.h"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/maxpooling_op.h"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/mfcc.h"
-    "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/mfcc_dt.h"
+    "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/mfcc_dct.h"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/mfcc_mel_filterbank.h"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/mirror_pad_op.h"
     "${tensorflow_SOURCE_DIR}/tensorflow/core/kernels/mirror_pad_op_cpu_impl.h"
