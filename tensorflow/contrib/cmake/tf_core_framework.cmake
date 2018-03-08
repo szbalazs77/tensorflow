@@ -50,7 +50,7 @@ function(RELATIVE_PROTOBUF_GENERATE_CPP SRCS HDRS ROOT_DIR)
       DEPENDS ${ABS_FIL} ${_protoc_dep}
       COMMENT "Running C++ protocol buffer compiler on ${FIL}"
       VERBATIM )
-    if (tensorflow_BUILD_SHARED_LIB)
+    if (tensorflow_BUILD_SHARED_LIB OR tensorflow_BUILD_STATIC_LIB)
       install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb.h" DESTINATION "include/${REL_DIR}")
     endif()
   endforeach()
@@ -127,7 +127,7 @@ function(RELATIVE_PROTOBUF_TEXT_GENERATE_CPP SRCS HDRS ROOT_DIR)
       DEPENDS ${ABS_FIL} ${_proto_text_dep}
       COMMENT "Running C++ protocol buffer text compiler (${PROTO_TEXT_EXE}) on ${FIL}"
       VERBATIM )
-    if (tensorflow_BUILD_SHARED_LIB)
+    if (tensorflow_BUILD_SHARED_LIB OR tensorflow_BUILD_STATIC_LIB)
       install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}/${FIL_WE}.pb_text.h" DESTINATION "include/${REL_DIR}")
     endif()
   endforeach()

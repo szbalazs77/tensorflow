@@ -72,7 +72,7 @@ function(SHOW_VARIABLES)
 endfunction()
 
 function(InstallTFHeaders HDR_VAR BASE_DIR DEST_DIR)
-  if (tensorflow_BUILD_SHARED_LIB)
+  if (tensorflow_BUILD_SHARED_LIB OR tensorflow_BUILD_STATIC_LIB)
     string(LENGTH ${BASE_DIR} _base_len)
     math(EXPR _substr_start "${_base_len} + 1")
     foreach (_file ${${HDR_VAR}})
